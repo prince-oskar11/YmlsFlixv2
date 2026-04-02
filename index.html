@@ -122,14 +122,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
 <script>
-  // ---------------------------
-  // 1️⃣ FIREBASE INIT
-  // ---------------------------
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID"
-  };
+ 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
@@ -155,38 +148,46 @@
   // ---------------------------
   function showAuth() {
     document.getElementById("content").innerHTML = `
-      <div class="p-8 max-w-md mx-auto bg-gray-900 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-bold mb-4">Login / Sign Up</h2>
-        <input id="email" class="w-full p-3 mb-3 rounded bg-gray-800" placeholder="Email" />
-        <input id="password" type="password" class="w-full p-3 mb-3 rounded bg-gray-800" placeholder="Password" />
-        <div class="flex gap-2 mb-4">
-          <button onclick="signup()" class="flex-1 bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold">Sign Up</button>
-          <button onclick="login()" class="flex-1 bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded font-semibold">Login</button>
-        </div>
-        <button onclick="googleLogin()" class="w-full bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold"><i class="fa fa-google"></i> Sign in with Google</button>
-      </div>
+      <div <div class="p-8 max-w-md mx-auto bg-gray-900 rounded-lg shadow-lg">
+  <h2 class="text-2xl font-bold mb-4">Login / Sign Up</h2>
+  <input id="email" class="w-full p-3 mb-3 rounded bg-gray-800" placeholder="Email" />
+  <input id="password" type="password" class="w-full p-3 mb-3 rounded bg-gray-800" placeholder="Password" />
+  <div class="flex gap-2 mb-4">
+    <button onclick="signup()" class="flex-1 bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold">Sign Up</button>
+    <button onclick="login()" class="flex-1 bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded font-semibold">Login</button>
+  </div>
+</div>
     `;
   }
 
   function signup() {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-    auth.createUserWithEmailAndPassword(email, pass)
-      .then(() => alert("Account created"))
-      .catch(e => alert(e.message));
-  }
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+  console.log("Signing up:", email);
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(() => {
+      console.log("Signup successful");
+      alert("Account created! Please login.");
+    })
+    .catch(e => {
+      console.error("Signup error:", e);
+      alert(e.message);
+    });
+}
 
-  function login() {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-    auth.signInWithEmailAndPassword(email, pass)
-      .catch(e => alert(e.message));
-  }
-
-  function googleLogin() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(e => alert(e.message));
-  }
+function login() {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+  console.log("Logging in:", email);
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(() => {
+      console.log("Login successful");
+    })
+    .catch(e => {
+      console.error("Login error:", e);
+      alert(e.message);
+    });
+}
 
   function logout() {
     auth.signOut();
@@ -400,12 +401,7 @@
     auth.signInWithEmailAndPassword(email, pass)
       .catch(e => alert(e.message));
   }
-
-  function googleLogin() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(e => alert(e.message));
-  }
-
+  
   function logout() {
     auth.signOut();
     localStorage.removeItem("activeProfile");
