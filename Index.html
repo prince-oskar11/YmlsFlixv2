@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YmlFlix</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+</head>
+<body>
+
+<header class="nav">
+  <div class="logo">YF</div>
+  <input type="text" id="search" placeholder="Search...">
+  <div class="icons">
+    <button onclick="goHome()">🏠</button>
+    <button onclick="showGenres()">🎭</button>
+    <button onclick="showWishlist()">⭐</button>
+    <button onclick="showProfiles()">👤</button>
+  </div>
+</header>
+
+<div id="hero"><h1 id="heroTitle"></h1></div>
+<main id="content"></main>
+
+<div id="playerModal" class="hidden">
+  <video id="videoPlayer" controls></video>
+  <button id="skipIntro">Skip Intro</button>
+  <select id="subMenu"></select>
+  <button onclick="nextEpisode()">Next</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
