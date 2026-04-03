@@ -1,7 +1,7 @@
 body { margin:0; background:black; color:orange; font-family:Arial; }
 .nav { display:flex; justify-content:space-between; padding:10px; background:black; }
 .logo { color:orange; font-size:24px; }
-.icons button { background:none; border:none; color:white; font-size:20px; }
+.icons button { background:none; border:none; color:orange; font-size:20px; }
 #hero { height:60vh; background-size:cover; }
 .row { display:flex; overflow-x:auto; }
 .card { min-width:150px; margin:10px; }
