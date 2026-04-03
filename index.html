@@ -236,7 +236,7 @@ function login() {
   // 6️⃣ API SETTINGS
   // ---------------------------
   const API = "https://graphql.anilist.co";
-  const STREAM = "https://api.consumet.org/anime/gogoanime";
+  const STREAM = "https://api.consumet.org/anime/zoro";
 
   // ---------------------------
   // 7️⃣ HOME / HERO / ROWS
@@ -252,8 +252,6 @@ function login() {
     await loadRow("⏳ Upcoming", "/seasons/upcoming");
     await loadSmartRecommendations();
   }
-
-  async function loadHero() {
   async function loadHero() {
   const query = `
     query {
@@ -277,6 +275,16 @@ function login() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query })
+    });
+    const data = await res.json();
+    const hero = data.data.Page.media[0];
+    document.getElementById("hero").style.backgroundImage = `url(${hero.coverImage.large})`;
+    document.getElementById("heroTitle").innerText = hero.title.english || hero.title.romaji;
+    document.getElementById("heroDesc").innerText = hero.description || "";
+    document.getElementById("heroPlayBtn").onclick = () => openAnime(hero.title.english || hero.title.romaji);
+  } catch (e) {
+    console.error(e);
+  }
     });
     const data = await res.json();
     const hero = data.data.Page.media[0];
