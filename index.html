@@ -263,6 +263,7 @@ function login() {
   }
 
   async function loadHero() {
+  async function loadHero() {
   const query = `
     query {
       Page(perPage: 1) {
@@ -291,6 +292,7 @@ function login() {
     document.getElementById("hero").style.backgroundImage = `url(${hero.coverImage.large})`;
     document.getElementById("heroTitle").innerText = hero.title.english || hero.title.romaji;
     document.getElementById("heroDesc").innerText = hero.description || "";
+    document.getElementById("heroPlayBtn").onclick = () => openAnime(hero.title.english || hero.title.romaji);
   } catch (e) {
     console.error(e);
   }
@@ -302,9 +304,96 @@ function login() {
   }
 
   async function loadRow(title, endpoint) {
-    const res = await fetch(API + endpoint);
-    const data = (await res.json()).data;
+  let query;
+  switch(endpoint) {
+    case "/top/anime":
+      query = `
+        query {
+          Page(perPage: 10) {
+            media(sort: TRENDING_DESC, type: ANIME) {
+              id
+              title {
+                romaji
+                english
+              }
+              coverImage {
+                large
+              }
+            }
+          }
+        }
+      `;
+      break;
+    case "/top/anime?filter=bypopularity":
+      query = `
+        query {
+          Page(perPage: 10) {
+            media(sort: POPULARITY_DESC, type: ANIME) {
+              id
+              title {
+                romaji
+                english
+              }
+              coverImage {
+                large
+              }
+            }
+          }
+        }
+      `;
+      break;
+    case "/seasons/now":
+      query = `
+        query {
+          Page(perPage: 10) {
+            media(sort: AIRING_DESC, type: ANIME) {
+              id
+              title {
+                romaji
+                english
+              }
+              coverImage {
+                large
+              }
+            }
+          }
+        }
+      `;
+      break;
+    case "/seasons/upcoming":
+      query = `
+        query {
+          Page(perPage: 10) {
+            media(sort: UPCOMING_DESC, status: NOT_YET_RELEASED, type: ANIME) {
+              id
+              title {
+                romaji
+                english
+              }
+              coverImage {
+                large
+              }
+            }
+          }
+        }
+      `;
+      break;
+    default:
+      return;
+  }
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    const result = await res.json();
+    const data = result.data.Page.media;
     renderRow(title, data);
+  } catch (e) {
+    console.error(e);
+  }
   }
 
   // ---------------------------
@@ -315,32 +404,56 @@ function login() {
   let currentAnime = null; // store full anime info if needed
 
   async function openAnime(title) {
-    try {
-      const res = await fetch(`${API}/anime/${encodeURIComponent(title)}`);
-      const data = await res.json();
-      currentAnimeId = data.data.id;
-      // Fetch episodes info
-      const infoRes = await fetch(`${STREAM}/info/${currentAnimeId}`);
-      const epData = await infoRes.json();
-      currentEpisode = epData.episodes[0]?.number || 1;
-      // Render episodes
-      document.getElementById("epList").innerHTML = epData.episodes.map(e => `<button class="px-3 py-1 bg-gray-700 rounded text-sm" onclick="playEpisode('${e.id}',${e.number})">Ep ${e.number}</button>`).join('');
-    } catch (e) { console.error(e); }
+  const query = `
+    query ($search: String) {
+      Media(search: $search, type: ANIME) {
+        id
+        title {
+          romaji
+          english
+        }
+        description
+        coverImage {
+          large
+        }
+        episodes
+      }
+    }
+  `;
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { search: title } })
+    });
+    const data = await res.json();
+    const media = data.data.Media;
+    currentAnimeId = media.id;
+    // Fetch episodes info from your streaming API
+    const infoRes = await fetch(`${STREAM}/info/${currentAnimeId}`);
+    const epData = await infoRes.json();
+    currentEpisode = epData.episodes[0]?.number || 1;
+    // Render episodes
+    document.getElementById("epList").innerHTML = epData.episodes
+      .map(e => `<button class="px-3 py-1 bg-gray-700 rounded text-sm" onclick="playEpisode('${e.id}',${e.number})">Ep ${e.number}</button>`)
+      .join('');
+  } catch (e) {
+    console.error(e);
+  }
   }
 
   async function playEpisode(id, num) {
-    currentEpisode = num;
-    try {
-      const res = await fetch(`${STREAM}/watch/${id}`);
-      const data = await res.json();
-      // Set video source from the first source
-      document.getElementById("player").src = data.sources[0].url;
-      document.getElementById("player").play();
-      document.getElementById("playerView").classList.remove("hidden");
-      document.getElementById("playerTitle").innerText = "Loading...";
-      // Set episode count
-      document.getElementById("totalEpDisplay").innerText = "Episodes: " + data.episodes.length;
-    } catch (e) { console.error(e); }
+  currentEpisode = num;
+  try {
+    const res = await fetch(`${STREAM}/watch/${id}`);
+    const data = await res.json();
+    // Use the first source as video URL
+    document.getElementById("player").src = data.sources[0].url;
+    document.getElementById("player").play();
+    document.getElementById("playerView").classList.remove("hidden");
+    document.getElementById("playerTitle").innerText = "Loading...";
+    document.getElementById("totalEpDisplay").innerText = "Episodes: " + data.episodes.length;
+  } catch (e) { console.error(e); }
   }
 
   function closePlayer() {
@@ -509,14 +622,12 @@ function login() {
     // Implement if needed
   }
 
-  // Initialize app
-  window.onload = () => {
-    // Firebase auth
-    // Load hero and default rows
-    loadHero();
-    goHome();
-  };
-
+loadHero();
+loadRow("🔥 Trending", "/top/anime");
+loadRow("⭐ Most Popular", "/top/anime?filter=bypopularity");
+loadRow("📺 Playing Now", "/seasons/now");
+loadRow("⏳ Upcoming", "/seasons/upcoming");
+  }
   // ---------------------------
   // Additional Helper functions
   // ---------------------------
