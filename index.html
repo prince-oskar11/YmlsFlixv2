@@ -1,271 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>YmlAnime</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#00ff88">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #111;
+  color: #fff;
+}
+.header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: #222;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+.header .icon {
+  margin: 0 10px;
+  cursor: pointer;
+}
+.search-box {
+  flex: 1;
+  display: flex;
+  margin-left: 10px;
+}
+.search-box input {
+  width: 100%;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: none;
+}
+.section {
+  padding: 20px 10px;
+}
+.section-header {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+.hero {
+  position: relative;
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.hero-content {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
+.hero h2 {
+  font-size: 2em;
+  margin: 0;
+}
+.hero button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.scroll-row {
+  display: flex;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+.poster {
+  flex: 0 0 auto;
+  width: 150px;
+  margin-right: 10px;
+  background: #222;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+.poster img {
+  width: 100%;
+  display: block;
+}
+.poster .info {
+  padding: 5px;
+  font-size: 0.9em;
+}
+.poster .heart {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+.poster .badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: rgba(0,0,0,0.7);
+  padding: 2px 4px;
+  font-size: 0.7em;
+  border-radius: 3px;
+}
+</style>
+</head>
 <body>
 
-    <div id="choiceOverlay" onclick="this.style.display='none'">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
-            <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
-            <div class="space-y-3">
-                <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
-                <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
-                <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="trailerOverlay" onclick="closeTrailer()">
-        <div class="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden mx-4 shadow-2xl border border-white/5">
-            <button onclick="closeTrailer()" class="absolute top-4 right-4 z-[6000] text-white bg-red-600 w-10 h-10 rounded-full font-black">✕</button>
-            <iframe id="trailerFrame" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <div id="confirmOverlay">
-        <div class="modal-box">
-            <div class="w-16 h-16 bg-red-600/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                <i class="fa fa-exclamation-triangle"></i>
-            </div>
-            <h3 class="text-white font-black uppercase text-xs mb-3">Hard Reset?</h3>
-            <p class="text-gray-500 text-[10px] mb-8 uppercase tracking-widest leading-loose">This will wipe your account sync, history, and wishlist permanently.</p>
-            <div class="flex gap-3">
-                <button onclick="confirmClearHistory()" class="btn-red flex-1">Reset</button>
-                <button onclick="document.getElementById('confirmOverlay').style.display='none'" class="btn-red flex-1 bg-gray-800">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="fixed top-0 w-full z-[2500] glass p-5">
-        <div class="container mx-auto flex items-center justify-between">
-            <h1 class="text-2xl font-black logo-text cursor-pointer tracking-tighter" onclick="showPage('home')">YMLSFLIX PRO</h1>
-            <div class="flex items-center gap-7">
-                <i onclick="showPage('home')" class="fa fa-home text-gray-400 hover:text-white cursor-pointer text-2xl transition"></i>
-                <i onclick="showPage('wishlist')" class="fa fa-heart text-gray-400 hover:text-red-500 cursor-pointer text-2xl transition"></i>
-                <i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large text-gray-400 hover:text-white cursor-pointer text-xl transition"></i>
-                <i onclick="toggleDropdown('profileDrop')" class="fa fa-user-circle text-gray-400 hover:text-white cursor-pointer text-2xl transition"></i>
-            </div>
-        </div>
-        <div class="container mx-auto mt-6 px-1">
-            <div class="flex gap-3">
-                <div class="relative flex-1">
-                    <i class="fa fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                    <input type="text" id="searchBar" class="bg-[#111827] border border-[#1f2937] text-white pl-14 pr-5 py-4 rounded-2xl w-full outline-none focus:border-red-500 transition-all" placeholder="Search for anime, movies..." oninput="handleSearch(this.value)" />
-                </div>
-                <button id="installBtn" onclick="triggerInstall()" class="hidden bg-indigo-600 text-[10px] font-black px-6 rounded-2xl uppercase tracking-widest hover:bg-indigo-500">Install</button>
-            </div>
-            <div class="flex gap-3 mt-5 overflow-x-auto no-scrollbar pb-1">
-                <div id="chip-TV" onclick="fetchByFormat('TV')" class="cat-chip">TV Series</div>
-                <div id="chip-MOVIE" onclick="fetchByFormat('MOVIE')" class="cat-chip">Movies</div>
-                <div id="chip-OVA" onclick="fetchByFormat('OVA')" class="cat-chip">OVA</div>
-                <div id="chip-SPECIAL" onclick="fetchByFormat('SPECIAL')" class="cat-chip">Special</div>
-            </div>
-        </div>
-
-        <div id="genreDrop" class="dropdown-content">
-            <div class="flex mb-6 gap-6">
-                <button onclick="switchTab('genres')" id="tab-gen" class="flex-1 pb-3 font-black text-[11px] uppercase border-b-2 border-red-600 text-white">Categories</button>
-                <button onclick="switchTab('years')" id="tab-year" class="flex-1 pb-3 font-black text-[11px] uppercase text-gray-500">Year</button>
-            </div>
-            <div id="genreList" class="grid grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-2"></div>
-            <div id="yearList" class="grid grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-2 hidden"></div>
-        </div>
-
-        <div id="profileDrop" class="dropdown-content">
-            <div id="authBox">
-                <h3 class="text-white font-black text-[10px] uppercase mb-6 text-center tracking-[0.3em]">Premium Sync</h3>
-                <input type="text" id="authEmail" placeholder="Enter Username" class="bg-[#111827] p-4 rounded-xl w-full mb-3 border border-[#1f2937] outline-none focus:border-accent" />
-                <input type="password" id="authPass" placeholder="Enter Password" class="bg-[#111827] p-4 rounded-xl w-full mb-6 border border-[#1f2937] outline-none focus:border-accent" />
-                <div class="flex gap-3">
-                    <button onclick="handleAuth('login')" class="btn-red flex-1">Login</button>
-                    <button onclick="handleAuth('signup')" class="btn-red flex-1 bg-gray-700">Register</button>
-                </div>
-            </div>
-            <div id="userBox" class="hidden text-center">
-                <div class="w-20 h-20 bg-gradient-to-tr from-red-600 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl font-black shadow-2xl">Y</div>
-                <h4 id="userDisplay" class="font-black text-white uppercase text-base mb-6 tracking-wider"></h4>
-                <button onclick="document.getElementById('confirmOverlay').style.display='flex'" class="btn-red bg-gray-900 mb-3 border border-red-900/40 text-red-500">Wipe All Cache</button>
-                <button onclick="handleLogout()" class="btn-red bg-red-950/30 text-red-500">Sign Out</button>
-            </div>
-        </div>
-    </nav>
-
-    <div id="page-home" class="page-view active-view pt-56">
-        <header id="hero">
-            <div class="hero-grad"></div>
-            <div class="container mx-auto px-8 relative z-10">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="bg-red-600 text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-tighter">Editor's Choice</div>
-                    <div class="text-white/50 text-[10px] font-bold uppercase"><i class="fa fa-star text-yellow-500 mr-1"></i> Top Trending</div>
-                </div>
-                <h2 id="heroTitle" class="text-5xl font-black mb-4 uppercase italic tracking-tighter leading-none max-w-3xl"></h2>
-                <div id="heroDesc" class="text-gray-400 text-xs max-w-lg line-clamp-3 mb-10 leading-relaxed font-medium"></div>
-                <div class="flex gap-4">
-                    <button id="heroPlayBtn" class="bg-white text-black px-14 py-5 rounded-full font-black text-[11px] uppercase shadow-2xl hover:bg-red-600 hover:text-white transition-all active:scale-95">Stream Now</button>
-                    <button id="heroTrailerBtn" class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-5 rounded-full font-black text-[11px] uppercase hover:bg-white/20 transition-all">Trailer</button>
-                </div>
-            </div>
-</header>
-<main class="container mx-auto p-6 space-y-20">
-            <section id="continueSection" class="hidden">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-[11px] font-black uppercase text-red-500 tracking-[0.4em]">Jump Back In</h2>
-                    <span class="text-[9px] text-gray-600 font-bold uppercase">Auto-Saved</span>
-                </div>
-                <div id="continueGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div>
-            </section>
-            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-orange-500 tracking-[0.2em]">Trending Now</h2><div id="trendingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
-            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-yellow-500 tracking-[0.2em]">Top Rated</h2><div id="ratedGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
-            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-blue-500 tracking-[0.2em]">Now Playing</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
-            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-purple-500 tracking-[0.2em]">Most Popular</h2><div id="popularGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
-            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-green-500 tracking-[0.2em]">Upcoming</h2><div id="upcomingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
-        </main>
+<!-- Top bar -->
+<div class="header">
+  <div class="icon" id="home-btn" title="Home">🏠</div>
+  <div class="icon" id="wishlist-btn" title="Wishlist">❤️</div>
+  <div class="icon" id="genres-btn" title="Genres">🎞️</div>
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="YmlAnime..." />
+  </div>
+  <div class="icon" id="profile-btn" title="Profile">👤</div>
 </div>
-<div class="hero" id="hero"></div>
-<div id="content"></div>
 
-<div id="player">
-  <button onclick="goHome()">⬅ Back</button>
-  <h2 id="title"></h2>
-  <iframe id="video"></iframe>
-  <div id="episodes"></div>
+<!-- Hero section -->
+<div class="hero" id="hero" style="background-image: url('https://images.alphacoders.com/123/12345.jpg');">
+  <div class="hero-content">
+    <h2 id="hero-title">BEYOND JOURNEY'S END</h2>
+    <button id="stream-now">STREAM NOW</button>
+    <button id="trailer-btn">TRAILER</button>
+  </div>
+</div>
+
+<!-- Sections -->
+<div class="section" id="trending">
+  <div class="section-header">TRENDING NOW</div>
+  <div class="scroll-row" id="trending-row"></div>
+</div>
+<div class="section" id="top-rated">
+  <div class="section-header">TOP RATED</div>
+  <div class="scroll-row" id="top-rated-row"></div>
+</div>
+<div class="section" id="now-playing">
+  <div class="section-header">NOW PLAYING</div>
+  <div class="scroll-row" id="now-playing-row"></div>
+</div>
+<div class="section" id="most-popular">
+  <div class="section-header">MOST POPULAR</div>
+  <div class="scroll-row" id="most-popular-row"></div>
+</div>
+<div class="section" id="upcoming">
+  <div class="section-header">UPCOMING</div>
+  <div class="scroll-row" id="upcoming-row"></div>
+</div>
+
+<!-- Modal for trailer -->
+<div id="trailer-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; align-items:center; justify-content:center; z-index:9999;">
+  <video id="trailer-video" controls autoplay style="width:80%; max-height:80%;"></video>
+  <button style="position:absolute; top:10px; right:20px; padding:10px; background:#fff; border:none; border-radius:4px; cursor:pointer;" id="close-trailer">Close</button>
 </div>
 
 <script>
-// ===== CONFIG =====
-const YT_KEY = "YOUR_YOUTUBE_API_KEY";
-let wishlist = JSON.parse(localStorage.getItem('wishlist')||'[]');
-let history = JSON.parse(localStorage.getItem('history')||'[]');
-let animeData = [];
-let trailerCache = JSON.parse(localStorage.getItem('trailers')||'{}');
+const shows = [
+  {
+    id: 1,
+    title: "Attack on Titan",
+    episodes: 75,
+    rating: 9.0,
+    backgroundUrl: "https://images.alphacoders.com/123/12345.jpg",
+    trailer: "https://www.w3schools.com/html/mov_bbb.mp4",
+    category: "Trending"
+  },
+  {
+    id: 2,
+    title: "My Hero Academia",
+    episodes: 88,
+    rating: 8.5,
+    backgroundUrl: "https://images.alphacoders.com/543/54321.jpg",
+    trailer: "https://www.w3schools.com/html/movie.mp4",
+    category: "Top Rated"
+  },
+  {
+    id: 3,
+    title: "One Piece",
+    episodes: 1000,
+    rating: 9.2,
+    backgroundUrl: "https://images.alphacoders.com/234/23456.jpg",
+    trailer: "https://www.w3schools.com/html/mov_bbb.mp4",
+    category: "Most Popular"
+  },
+  {
+    id: 4,
+    title: "Demon Slayer",
+    episodes: 26,
+    rating: 8.9,
+    backgroundUrl: "https://images.alphacoders.com/789/78910.jpg",
+    trailer: "https://www.w3schools.com/html/movie.mp4",
+    category: "Trending"
+  },
+  {
+    id: 5,
+    title: "Gintama",
+    episodes: 367,
+    rating: 8.7,
+    backgroundUrl: "https://images.alphacoders.com/321/32167.jpg",
+    trailer: "https://www.w3schools.com/html/mov_bbb.mp4",
+    category: "Top Rated"
+  },
+  // Add more shows as needed
+];
 
-// ===== FETCH ANIME =====
-async function loadAnime(){
-  const cached = localStorage.getItem('animeCache');
-  if(cached){ animeData = JSON.parse(cached); init(); return; }
-  const res = await fetch('https://api.jikan.moe/v4/top/anime');
-  const data = await res.json();
-  animeData = data.data.slice(0,20);
-  localStorage.setItem('animeCache', JSON.stringify(animeData));
-  init();
-}
+// populate background with most rated show
+const hero = document.getElementById("hero");
+const heroTitle = document.getElementById("hero-title");
+const backgroundShow = shows.reduce((prev, curr) => prev.rating > curr.rating ? prev : curr);
+hero.style.backgroundImage = `url('${backgroundShow.backgroundUrl}')`;
+heroTitle.innerText = backgroundShow.title;
 
-// ===== TRAILER =====
-async function getTrailer(title){
-  if(trailerCache[title]) return trailerCache[title];
-  try{
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(title+" anime trailer")}&key=${YT_KEY}`);
-    const data = await res.json();
-    const id = data.items[0].id.videoId;
-    const url = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1`;
-    trailerCache[title]=url;
-    localStorage.setItem('trailers',JSON.stringify(trailerCache));
-    return url;
-  }catch{ return "https://www.youtube.com/embed/dQw4w9WgXcQ"; }
-}
+const categories = {
+  "Trending": [],
+  "Top Rated": [],
+  "Most Popular": [],
+  "Now Playing": [],
+  "Upcoming": []
+};
 
-// ===== HERO ROTATION =====
-let heroIndex=0;
-function setHero(a){ document.getElementById('hero').style.backgroundImage=`url(${a.images.jpg.large_image_url})`; }
-setInterval(()=>{ if(animeData.length){ heroIndex=(heroIndex+1)%animeData.length; setHero(animeData[heroIndex]); } },5000);
-
-// ===== CREATE ROW =====
-function createRow(title,list){
-  const container=document.createElement('div'); container.className='row-container';
-  container.innerHTML=`<div class="row-title">${title}</div><div class="row-scroll"></div>`;
-  const scroll=container.querySelector('.row-scroll');
-  list.forEach(a=>{
-    const c=document.createElement('div'); c.className='card';
-    c.innerHTML=`
-      <img src="${a.images.jpg.image_url}">
-      <iframe class="preview"></iframe>
-      <div class="overlay">▶</div>
-      <span class="badge ep">EP ${a.episodes||'?'}</span>
-      <span class="badge score">⭐ ${a.score||'N/A'}</span>
-      <span class="badge age">${a.rating||''}</span>
-      <span class="badge subdub">SUB/DUB</span>
-      <span class="heart">${wishlist.includes(a.mal_id)?'💚':'🤍'}</span>
-    `;
-    c.addEventListener('mouseenter', async()=>{ c.querySelector('iframe').src = await getTrailer(a.title); });
-    c.addEventListener('mouseleave',()=>{ c.querySelector('iframe').src=''; });
-    c.onclick=()=>openPlayer(a);
-    c.querySelector('.heart').onclick=(e)=>{ e.stopPropagation(); wishlist.includes(a.mal_id)?wishlist=wishlist.filter(id=>id!==a.mal_id):wishlist.push(a.mal_id); localStorage.setItem('wishlist',JSON.stringify(wishlist)); load(); };
-    scroll.appendChild(c);
-  });
-  return container;
-}
-
-// ===== LOAD UI =====
-function load(){
-  const content=document.getElementById('content'); content.innerHTML='';
-  content.appendChild(createRow('Jump Back In', history));
-  content.appendChild(createRow('Trending Now', animeData));
-  content.appendChild(createRow('Top Rated', animeData));
-  content.appendChild(createRow('Now Playing', animeData));
-  content.appendChild(createRow('Most Popular', animeData));
-  content.appendChild(createRow('Upcoming', animeData));
-}
-
-// ===== WISHLIST =====
-function showWishlist(){
-  const content=document.getElementById('content'); content.innerHTML='';
-  content.appendChild(createRow('Your Wishlist ❤️', animeData.filter(a=>wishlist.includes(a.mal_id))));
-}
-
-// ===== PLAYER =====
-async function openPlayer(a){
-  document.getElementById('content').style.display='none';
-  document.getElementById('player').style.display='block';
-  document.getElementById('title').innerText=a.title;
-  document.getElementById('video').src=await getTrailer(a.title);
-  history.push(a); localStorage.setItem('history',JSON.stringify(history));
-  const res = await fetch(`https://api.jikan.moe/v4/anime/${a.mal_id}/episodes`);
-  const data = await res.json();
-  const epDiv=document.getElementById('episodes'); epDiv.innerHTML='';
-  data.data.slice(0,20).forEach(ep=>{
-    const btn=document.createElement('button'); btn.className='ep-btn';
-    btn.innerText=`EP ${ep.mal_id}`;
-    btn.onclick=()=>{ document.getElementById('video').src="https://www.youtube.com/embed/dQw4w9WgXcQ"; };
-    epDiv.appendChild(btn);
-  });
-}
-
-// ===== NAV =====
-function goHome(){ document.getElementById('player').style.display='none'; document.getElementById('content').style.display='block'; load(); }
-
-// ===== PROFILE =====
-function profile(){
-  let user = localStorage.getItem('user');
-  if(!user){ user = prompt("Enter username"); localStorage.setItem('user',user); } 
-  else { if(confirm("Clear history?")) localStorage.setItem('history','[]'); }
-}
-
-// ===== SEARCH =====
-document.getElementById('search').addEventListener('input',e=>{
-  const val=e.target.value.toLowerCase();
-  const filtered=animeData.filter(a=>a.title.toLowerCase().includes(val));
-  const content=document.getElementById('content'); content.innerHTML='';
-  content.appendChild(createRow('Search Results',filtered));
+// Distribute shows into categories
+shows.forEach(s => {
+  if (categories[s.category]) {
+    categories[s.category].push(s);
+  }
 });
 
-// ===== INSTALL =====
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; });
-document.getElementById('installBtn').onclick=()=>{ if(deferredPrompt) deferredPrompt.prompt(); };
+// Function to load shows into categories
+function loadCategory(category, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  categories[category].forEach(show => {
+    const div = document.createElement("div");
+    div.className = "poster";
+    div.innerHTML = `
+      <img src="${show.backgroundUrl}" />
+      <div class="heart">🤍</div>
+      <div class="badge">N/A</div>
+      <div class="info">
+        <div>Eps: ${show.episodes}</div>
+        <div>Rating: ${show.rating}</div>
+      </div>
+      <div style="padding:2px;">${show.title}</div>
+    `;
+    // toggle wishlist
+    div.querySelector('.heart').onclick = (e) => {
+      e.stopPropagation();
+      // toggle heart
+      if (div.querySelector('.heart').innerText === '🤍') {
+        div.querySelector('.heart').innerText = '❤️';
+      } else {
+        div.querySelector('.heart').innerText = '🤍';
+      }
+    };
+    // click to watch trailer
+    div.onclick = () => {
+      playTrailer(show.trailer);
+    };
+    container.appendChild(div);
+  });
+}
 
-// ===== INIT =====
-function init(){ setHero(animeData[0]); load(); }
-loadAnime();
+// Load all categories
+loadCategory("Trending", "trending-row");
+loadCategory("Top Rated", "top-rated-row");
+loadCategory("Most Popular", "most-popular-row");
+loadCategory("Now Playing", "now-playing-row");
+loadCategory("Upcoming", "upcoming-row");
 
-// ===== SERVICE WORKER =====
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
+// Trailer modal
+function playTrailer(src) {
+  document.getElementById('trailer-video').src = src;
+  document.getElementById('trailer-modal').style.display = 'flex';
+}
+document.getElementById('close-trailer').onclick = () => {
+  document.getElementById('trailer-modal').style.display = 'none';
+}
+
+// Search filter
+document.getElementById('search-input').oninput = () => {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  document.querySelectorAll('.poster').forEach(p => {
+    if (p.innerText.toLowerCase().includes(q)) {
+      p.style.display = 'block';
+    } else {
+      p.style.display = 'none';
+    }
+  });
+}
+
+// Buttons
+document.getElementById('stream-now').onclick = () => {
+  alert("Stream feature coming soon");
+};
+document.getElementById('trailer-btn').onclick = () => {
+  alert("Trailer feature coming soon");
+};
 </script>
 </body>
 </html>
