@@ -4,76 +4,114 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YmlAnime</title>
+<link rel="manifest" href="manifest.json">
 
 <style>
-body { margin:0; background:#000; color:#fff; font-family:sans-serif; }
+body {
+  margin:0;
+  background:#0b0b0b;
+  color:#fff;
+  font-family:Arial;
+}
 
 /* HEADER */
 header {
+  position:fixed;
+  top:0;
+  width:100%;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:10px;
-  background:#111;
+  padding:10px 20px;
+  background:linear-gradient(to bottom,#000,transparent);
+  z-index:100;
 }
-.logo { color:#00ff88; font-size:22px; }
-.search { padding:5px; border:none; border-radius:4px; width:200px; }
+
+.logo { color:#00ff88; font-size:24px; }
+
+.search {
+  padding:6px;
+  border-radius:20px;
+  border:none;
+  background:#1a1a1a;
+  color:#fff;
+}
 
 .icons span {
-  margin-left:10px;
+  margin-left:15px;
   cursor:pointer;
-  font-size:18px;
 }
 
 /* HERO */
 .hero {
-  height:50vh;
+  height:70vh;
   background-size:cover;
   display:flex;
   align-items:flex-end;
-  padding:20px;
+  padding:40px;
 }
 
-/* ROWS */
-.row { padding:10px; }
-.row h2 { margin:5px 0; }
+.hero h1 { font-size:40px; }
+
+/* ROW */
+.row { padding:20px; margin-top:-80px; }
 .scroll {
   display:flex;
   overflow-x:auto;
-  gap:10px;
+  gap:12px;
 }
 
 /* CARD */
 .card {
-  min-width:140px;
+  min-width:160px;
   position:relative;
-  cursor:pointer;
+  border-radius:10px;
+  overflow:hidden;
+  transition:0.3s;
 }
-.card img { width:100%; border-radius:6px; }
 
-/* BADGES */
-.badge { position:absolute; font-size:10px; padding:2px 4px; }
-.ep { top:5px; left:5px; background:#000; }
-.score { bottom:5px; left:5px; background:#00ff88; color:#000; }
-.age { bottom:5px; right:5px; background:red; }
-.subdub { top:5px; right:25px; background:blue; }
+.card img { width:100%; height:230px; object-fit:cover; }
 
-.heart { position:absolute; top:5px; right:5px; }
+.card:hover { transform:scale(1.08); }
 
-/* PLAYER */
-#player { display:none; padding:10px; }
-iframe { width:100%; height:300px; }
-
-/* MODAL */
-#modal {
-  display:none;
-  position:fixed;
+/* OVERLAY */
+.overlay {
+  position:absolute;
   inset:0;
-  background:rgba(0,0,0,0.8);
+  background:rgba(0,0,0,0.7);
+  opacity:0;
+  display:flex;
+  flex-direction:column;
   justify-content:center;
   align-items:center;
 }
-#modal iframe { width:80%; height:60%; }
+
+.card:hover .overlay { opacity:1; }
+
+.play {
+  background:#00ff88;
+  color:#000;
+  padding:6px 12px;
+  border-radius:20px;
+}
+
+/* BADGES */
+.badge {
+  position:absolute;
+  font-size:11px;
+  padding:3px 6px;
+}
+
+.ep { top:5px; left:5px; background:#000; }
+.score { bottom:5px; left:5px; background:#00ff88; color:#000; }
+.age { bottom:5px; right:5px; background:red; }
+.subdub { top:5px; right:30px; background:blue; }
+
+.heart { top:5px; right:5px; position:absolute; }
+
+/* PLAYER */
+#player { display:none; padding:20px; }
+iframe { width:100%; height:400px; }
 </style>
 </head>
 
@@ -88,13 +126,17 @@ iframe { width:100%; height:300px; }
   <div class="icons">
     <span onclick="goHome()">🏠</span>
     <span onclick="showWishlist()">❤️</span>
-    <span onclick="alert('Genres page')">🎭</span>
-    <span onclick="showProfile()">👤</span>
+    <span onclick="alert('Genres coming')">🎭</span>
+    <span onclick="profile()">👤</span>
     <span id="installBtn">⬇️</span>
   </div>
 </header>
 
-<div class="hero" id="hero"></div>
+<div class="hero" id="hero">
+  <div>
+    <h1 id="heroTitle"></h1>
+  </div>
+</div>
 
 <div id="content"></div>
 
@@ -108,15 +150,12 @@ iframe { width:100%; height:300px; }
   <button>Dub</button>
 </div>
 
-<div id="modal">
-  <iframe id="trailer"></iframe>
-</div>
-
 <script>
 // DATA
 const anime = [
- {id:1,title:'AOT',ep:75,score:9.2,age:'R',img:'https://cdn.myanimelist.net/images/anime/10/47347.jpg'},
- {id:2,title:'JJK',ep:24,score:8.7,age:'PG-13',img:'https://cdn.myanimelist.net/images/anime/1171/109222.jpg'}
+ {id:1,title:'Attack on Titan',ep:75,score:9.2,age:'R',img:'https://cdn.myanimelist.net/images/anime/10/47347.jpg'},
+ {id:2,title:'Jujutsu Kaisen',ep:24,score:8.7,age:'PG-13',img:'https://cdn.myanimelist.net/images/anime/1171/109222.jpg'},
+ {id:3,title:'Chainsaw Man',ep:12,score:8.8,age:'R',img:'https://cdn.myanimelist.net/images/anime/1939/136859.jpg'}
 ];
 
 // STORAGE
@@ -127,10 +166,11 @@ let user = localStorage.getItem('user');
 // HERO
 function setHero(a){
  document.getElementById('hero').style.backgroundImage=`url(${a.img})`;
+ document.getElementById('heroTitle').innerText=a.title;
 }
 setHero(anime[0]);
 
-// RENDER
+// CREATE ROW
 function createRow(name,list){
  const row=document.createElement('div');
  row.className='row';
@@ -143,6 +183,10 @@ function createRow(name,list){
 
   c.innerHTML=`
     <img src="${a.img}">
+    <div class="overlay">
+      <div class="play">▶ Play</div>
+      <div>${a.title}</div>
+    </div>
     <span class="badge ep">EP ${a.ep}</span>
     <span class="badge score">⭐ ${a.score}</span>
     <span class="badge age">${a.age}</span>
@@ -190,7 +234,9 @@ function openPlayer(a){
  localStorage.setItem('history',JSON.stringify(history));
 }
 
-function nextEpisode(){ alert('Next episode'); }
+function nextEpisode(){
+ alert("Next episode logic");
+}
 
 // NAV
 function goHome(){
@@ -205,7 +251,7 @@ function showWishlist(){
  content.appendChild(createRow('Wishlist',anime.filter(a=>wishlist.includes(a.id))));
 }
 
-function showProfile(){
+function profile(){
  if(!user){
    const name=prompt("Enter username");
    localStorage.setItem('user',name);
@@ -223,7 +269,7 @@ document.getElementById('search').addEventListener('input',e=>{
  const filtered=anime.filter(a=>a.title.toLowerCase().includes(val));
  const content=document.getElementById('content');
  content.innerHTML='';
- content.appendChild(createRow('Search',filtered));
+ content.appendChild(createRow('Search Results',filtered));
 });
 
 // INSTALL
@@ -235,6 +281,11 @@ window.addEventListener('beforeinstallprompt',(e)=>{
 document.getElementById('installBtn').onclick=()=>{
  if(deferredPrompt) deferredPrompt.prompt();
 };
+
+// SW
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.register('sw.js');
+}
 </script>
 
 </body>
