@@ -12,7 +12,6 @@
     background-color: #222;
     color: #fff;
   }
-
   header {
     display: flex;
     align-items: center;
@@ -22,26 +21,22 @@
     top: 0;
     z-index: 999;
   }
-
   .icon {
     margin: 0 10px;
     cursor: pointer;
     font-size: 20px;
   }
-
   #search-container {
     flex: 1;
     display: flex;
     align-items: center;
   }
-
   #search-input {
     width: 60%;
     padding: 5px 10px;
     border: none;
     border-radius: 4px;
   }
-
   #install-btn {
     margin-left: 10px;
     padding: 5px 10px;
@@ -50,14 +45,12 @@
     border-radius: 4px;
     cursor: pointer;
   }
-
   main {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     padding: 10px;
   }
-
   .poster {
     position: relative;
     width: 200px;
@@ -67,12 +60,10 @@
     overflow: hidden;
     background: #333;
   }
-
   .poster img {
     width: 100%;
     display: block;
   }
-
   .poster-info {
     position: absolute;
     top: 8px;
@@ -83,7 +74,6 @@
     font-size: 12px;
     color: #fff;
   }
-
   .heart {
     position: absolute;
     top: 8px;
@@ -91,7 +81,6 @@
     font-size: 20px;
     cursor: pointer;
   }
-
   .bottom-left {
     position: absolute;
     bottom: 8px;
@@ -100,7 +89,6 @@
     display: flex;
     flex-direction: column;
   }
-
   /* Modal styles */
   .modal {
     display: none;
@@ -112,20 +100,17 @@
     align-items: center;
     justify-content: center;
   }
-
   .modal-content {
     background: #222;
     padding: 20px;
     border-radius: 8px;
-    max-width: 400px;
+    max-width: 600px;
     width: 90%;
   }
-
   #video-player {
     width: 100%;
     max-height: 70vh;
   }
-
   button {
     margin-top: 10px;
     padding: 8px 12px;
@@ -134,12 +119,10 @@
     background-color: #4CAF50;
     cursor: pointer;
   }
-
   #profile-section {
     display: flex;
     flex-direction: column;
   }
-
   #profile-section input {
     margin: 5px 0;
     padding: 5px;
@@ -149,24 +132,25 @@
 <body>
 
 <header>
-  <div class="icon" id="home-icon" title="Home">🏠</div>
-  <div class="icon" id="wishlist-icon" title="Wishlist">❤️</div>
-  <div class="icon" id="genres-icon" title="Genres">🎞️</div>
+  <div class="icon" id="home-btn" title="Home">🏠</div>
+  <div class="icon" id="wishlist-btn" title="Wishlist">❤️</div>
+  <div class="icon" id="genres-btn" title="Genres">🎞️</div>
   <div id="search-container">
     <input type="text" id="search-input" placeholder="YmlAnime..." />
     <button id="install-btn">Install</button>
   </div>
-  <div class="icon" id="profile-icon" title="Profile">👤</div>
+  <div class="icon" id="profile-btn" title="Profile">👤</div>
 </header>
 
-<main id="content">
-  <!-- Shows will be loaded here dynamically -->
+<main id="shows-container">
+  <!-- Shows will load here -->
 </main>
 
 <!-- Trailer Modal -->
 <div id="trailer-modal" class="modal">
   <div class="modal-content">
     <video id="video-player" controls autoplay></video>
+    <br />
     <button id="close-trailer">Close</button>
   </div>
 </div>
@@ -183,7 +167,7 @@
 
 <!-- Profile Modal -->
 <div id="profile-modal" class="modal">
-  <div class="modal-content" id="profile-section">
+  <div class="modal-content" id="profile-content">
     <div id="sign-in-section">
       <h3>Sign In</h3>
       <input type="text" id="username" placeholder="Username" />
@@ -199,7 +183,7 @@
 </div>
 
 <script>
-  // Sample data
+  // Sample data for shows
   const shows = [
     {
       id: 1,
@@ -237,177 +221,136 @@
       mostRated: false,
       backgroundUrl: "https://images.alphacoders.com/234/23456.jpg"
     }
-    // Add more shows as needed
   ];
 
-  let currentBackground = '';
+  const showsContainer = document.getElementById('shows-container');
 
-  const content = document.getElementById('content');
-
-  // Load shows on page load
   function loadShows(showsToLoad) {
-    content.innerHTML = '';
+    showsContainer.innerHTML = '';
     showsToLoad.forEach(show => {
-      const posterDiv = document.createElement('div');
-      posterDiv.className = 'poster';
-      posterDiv.dataset.id = show.id;
-      posterDiv.dataset.title = show.title;
-      posterDiv.dataset.trailer = show.trailer;
-      posterDiv.dataset.subdub = show.subDub;
-      posterDiv.dataset.streams = show.streams.join(',');
-
-      // Poster image
-      const img = document.createElement('img');
-      img.src = show.backgroundUrl;
-      img.alt = show.title;
-      posterDiv.appendChild(img);
-
-      // Info overlay
-      const info = document.createElement('div');
-      info.className = 'poster-info';
-
-      const epDiv = document.createElement('div');
-      epDiv.innerText = `Eps: ${show.episodes}`;
-      info.appendChild(epDiv);
-
-      const rateDiv = document.createElement('div');
-      rateDiv.innerText = `Rating: ${show.rating}`;
-      info.appendChild(rateDiv);
-
-      const ageDiv = document.createElement('div');
-      ageDiv.innerText = show.age;
-      info.appendChild(ageDiv);
-
-      posterDiv.appendChild(info);
-
-      // Heart icon
-      const heart = document.createElement('div');
-      heart.className = 'heart';
-      // Check if in wishlist
-      const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-      heart.innerHTML = wishlist.includes(show.id) ? '❤️' : '🤍';
-      heart.title = 'Add to Wishlist';
-      posterDiv.appendChild(heart);
-
-      // Bottom-left info
-      const bottomLeft = document.createElement('div');
-      bottomLeft.className = 'bottom-left';
-      bottomLeft.innerHTML = `<div>MostRated: ${show.mostRated}</div><div>Age: ${show.age}</div>`;
-      posterDiv.appendChild(bottomLeft);
-
-      // Event listeners
-      posterDiv.addEventListener('click', () => {
-        showPosterOptions(show);
+      const div = document.createElement('div');
+      div.className = 'poster';
+      div.dataset.id = show.id;
+      div.dataset.title = show.title;
+      div.dataset.trailer = show.trailer;
+      div.dataset.subtitle = show.subDub;
+      div.dataset.streams = show.streams.join(',');
+      div.dataset.background = show.backgroundUrl;
+      div.innerHTML = `
+        <img src="${show.backgroundUrl}" alt="${show.title}" />
+        <div class="poster-info">
+          <div>Ep: ${show.episodes}</div>
+          <div>Rating: ${show.rating}</div>
+          <div>${show.age}</div>
+        </div>
+        <div class="heart">🤍</div>
+        <div class="bottom-left">
+          <div>MostRated: ${show.mostRated}</div>
+          <div>Age: ${show.age}</div>
+        </div>
+      `;
+      // Click to show options
+      div.addEventListener('click', () => {
+        showOptions(show);
       });
-      heart.addEventListener('click', (e) => {
+      // Heart click
+      div.querySelector('.heart').addEventListener('click', (e) => {
         e.stopPropagation();
-        toggleWishlist(show.id, heart);
+        toggleWishlist(show.id, e.target);
       });
-
-      content.appendChild(posterDiv);
+      showsContainer.appendChild(div);
     });
-    changeBackground(showsToLoad);
+    // Change background based on most rated
+    updateBackground(showsToLoad);
   }
 
-  function changeBackground(showsToLoad) {
-    const mostRatedShow = showsToLoad.find(s => s.mostRated);
-    const url = mostRatedShow ? mostRatedShow.backgroundUrl : 'https://via.placeholder.com/1200x800?text=YmlAnime';
-    document.body.style.backgroundImage = `url(${url})`;
+  function updateBackground(shows) {
+    const mostRatedShow = shows.find(s => s.mostRated);
+    document.body.style.backgroundImage = mostRatedShow
+      ? `url(${mostRatedShow.backgroundUrl})`
+      : 'none';
     document.body.style.backgroundSize = 'cover';
   }
 
-  function showPosterOptions(show) {
-    const choice = confirm(`Options for ${show.title}:\nClick OK to Play Trailer\nCancel to do nothing.`);
-    if (choice) {
+  function showOptions(show) {
+    if (confirm(`Watch trailer for ${show.title}?`)) {
       playTrailer(show.trailer);
     }
   }
 
   function playTrailer(src) {
-    const modal = document.getElementById('trailer-modal');
-    const video = document.getElementById('video-player');
-    video.src = src;
-    modal.style.display = 'flex';
+    document.getElementById('video-player').src = src;
+    document.getElementById('trailer-modal').style.display = 'flex';
   }
 
-  document.getElementById('close-trailer').addEventListener('click', () => {
+  document.getElementById('close-trailer').onclick = () => {
     document.getElementById('trailer-modal').style.display = 'none';
-  });
+  };
 
-  // Wishlist handling
-  function toggleWishlist(showId, heartIcon) {
+  function toggleWishlist(id, icon) {
     let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-    if (wishlist.includes(showId)) {
-      wishlist = wishlist.filter(id => id !== showId);
-      heartIcon.innerHTML = '🤍';
+    if (wishlist.includes(id)) {
+      wishlist = wishlist.filter(i => i !== id);
+      icon.innerHTML = '🤍';
     } else {
-      wishlist.push(showId);
-      heartIcon.innerHTML = '❤️';
+      wishlist.push(id);
+      icon.innerHTML = '❤️';
     }
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }
 
-  // Search filtering
-  document.getElementById('search-input').addEventListener('input', () => {
-    const query = document.getElementById('search-input').value.toLowerCase();
+  // Search
+  document.getElementById('search-input').oninput = () => {
+    const q = document.getElementById('search-input').value.toLowerCase();
     document.querySelectorAll('.poster').forEach(p => {
       const title = p.dataset.title.toLowerCase();
-      p.style.display = title.includes(query) ? 'block' : 'none';
+      p.style.display = title.includes(q) ? 'block' : 'none';
     });
-  });
+  };
 
-  // Install as app (placeholder)
-  document.getElementById('install-btn').addEventListener('click', () => {
-    alert('Install feature coming soon');
-  });
+  // Load all shows initially
+  window.onload = () => {
+    loadShows(shows);
+    // Profile login status
+    if (localStorage.getItem('user')) {
+      document.getElementById('profile-content').querySelector('#sign-in-section').style.display = 'none';
+      document.getElementById('profile-content').querySelector('#profile-actions').style.display = 'block';
+    }
+  };
 
-  // Profile
-  document.getElementById('profile-icon').addEventListener('click', () => {
+  // Profile sign in/out
+  document.getElementById('profile-btn').onclick = () => {
     document.getElementById('profile-modal').style.display = 'flex';
-  });
+  };
 
-  document.getElementById('sign-in-btn').addEventListener('click', () => {
+  document.getElementById('sign-in-btn').onclick = () => {
     const username = document.getElementById('username').value;
     if (username) {
       localStorage.setItem('user', username);
       document.getElementById('profile-modal').style.display = 'none';
-      document.getElementById('sign-in-section').style.display = 'none';
-      document.getElementById('profile-actions').style.display = 'block';
+      document.getElementById('profile-content').querySelector('#sign-in-section').style.display = 'none';
+      document.getElementById('profile-content').querySelector('#profile-actions').style.display = 'block';
     }
-  });
+  };
 
-  document.getElementById('sign-out-btn').addEventListener('click', () => {
+  document.getElementById('sign-out-btn').onclick = () => {
     localStorage.removeItem('user');
     document.getElementById('profile-modal').style.display = 'none';
-    document.getElementById('sign-in-section').style.display = 'block';
-    document.getElementById('profile-actions').style.display = 'none';
-  });
+    document.getElementById('profile-content').querySelector('#sign-in-section').style.display = 'block';
+    document.getElementById('profile-content').querySelector('#profile-actions').style.display = 'none';
+  };
 
-  document.getElementById('clear-history').addEventListener('click', () => {
+  document.getElementById('clear-history').onclick = () => {
     if (confirm('Clear watch history?')) {
       localStorage.removeItem('history');
     }
-  });
-
-  // Initialize page with shows
-  window.onload = () => {
-    loadShows(shows);
-    const user = localStorage.getItem('user');
-    if (user) {
-      document.getElementById('sign-in-section').style.display = 'none';
-      document.getElementById('profile-actions').style.display = 'block';
-    }
   };
-</script>
 
-<!-- Service Worker registration -->
+</script>
 <script>
+  // Register service worker for PWA
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then(reg => {
-        console.log('SW registered', reg);
-      });
-    });
+    navigator.serviceWorker.register('sw.js');
   }
 </script>
 
