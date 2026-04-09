@@ -4,82 +4,43 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YmlAnime</title>
-
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#00ff88">
 <meta name="apple-mobile-web-app-capable" content="yes">
-
 <style>
-body { margin:0; background:#0b0b0b; color:#fff; font-family:Arial; }
+body { margin:0; font-family:Arial; background:#0b0b0b; color:#fff; }
+header { position:fixed; top:0; width:100%; display:flex; justify-content:space-between; align-items:center; padding:10px 20px; background:linear-gradient(to bottom,#000,transparent); z-index:100; }
+.logo { font-size:24px; color:#00ff88; font-weight:bold; }
+.search { padding:6px 10px; border-radius:20px; border:none; background:#1a1a1a; color:#fff; width:40%; }
+.icons span { margin-left:15px; cursor:pointer; font-size:20px; }
 
-/* HEADER */
-header {
-  position:fixed; top:0; width:100%;
-  display:flex; justify-content:space-between;
-  padding:10px 20px;
-  background:linear-gradient(to bottom,#000,transparent);
-  z-index:100;
-}
-.logo { color:#00ff88; font-size:24px; }
-.search { padding:6px; border-radius:20px; border:none; background:#1a1a1a; color:#fff; }
-.icons span { margin-left:15px; cursor:pointer; }
+.hero { height:60vh; background-size:cover; background-position:center; display:flex; align-items:flex-end; padding:40px; }
 
-/* HERO */
-.hero {
-  height:70vh;
-  background-size:cover;
-  display:flex;
-  align-items:flex-end;
-  padding:40px;
-}
+.row-container { padding:20px 0; }
+.row-title { font-weight:bold; margin-left:20px; margin-bottom:10px; font-size:18px; text-transform:uppercase; }
+.row-scroll { display:flex; overflow-x:auto; gap:12px; padding-left:20px; }
 
-/* ROW */
-.row { padding:20px; margin-top:-80px; }
-.scroll { display:flex; overflow-x:auto; gap:12px; }
-
-/* CARD */
-.card { min-width:160px; position:relative; border-radius:10px; overflow:hidden; }
-.card img { width:100%; height:230px; object-fit:cover; }
-
-.overlay {
-  position:absolute; inset:0;
-  background:rgba(0,0,0,0.7);
-  opacity:0;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-}
+.card { min-width:140px; position:relative; border-radius:10px; overflow:hidden; cursor:pointer; }
+.card img { width:100%; height:200px; object-fit:cover; border-radius:10px; }
+.card .overlay { position:absolute; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; font-size:24px; opacity:0; transition:0.2s; }
 .card:hover .overlay { opacity:1; }
-
-iframe.preview {
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  display:none;
-}
+iframe.preview { position:absolute; inset:0; width:100%; height:100%; display:none; }
 .card:hover iframe.preview { display:block; }
 
-/* BADGES */
-.badge { position:absolute; font-size:11px; padding:3px 6px; }
+.badge { position:absolute; font-size:11px; padding:2px 5px; color:#fff; border-radius:3px; font-weight:bold; }
 .ep { top:5px; left:5px; background:#000; }
 .score { bottom:5px; left:5px; background:#00ff88; color:#000; }
 .age { bottom:5px; right:5px; background:red; }
 .subdub { top:5px; right:30px; background:blue; }
-.heart { position:absolute; top:5px; right:5px; }
 
-/* PLAYER */
+.heart { position:absolute; top:5px; right:5px; font-size:16px; }
+
 #player { display:none; padding:20px; }
-iframe { width:100%; height:400px; }
-
-/* EPISODES */
+iframe#video { width:100%; height:400px; border:none; }
 #episodes { display:flex; flex-wrap:wrap; gap:5px; margin-top:10px; }
-.ep-btn {
-  padding:5px 10px;
-  background:#00ff88;
-  color:#000;
-  border:none;
-  cursor:pointer;
-}
+.ep-btn { padding:5px 10px; background:#00ff88; color:#000; border:none; cursor:pointer; border-radius:3px; }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -107,76 +68,48 @@ iframe { width:100%; height:400px; }
 <script>
 // ===== CONFIG =====
 const YT_KEY = "YOUR_YOUTUBE_API_KEY";
-
-// ===== STORAGE =====
 let wishlist = JSON.parse(localStorage.getItem('wishlist')||'[]');
 let history = JSON.parse(localStorage.getItem('history')||'[]');
 let animeData = [];
 let trailerCache = JSON.parse(localStorage.getItem('trailers')||'{}');
 
-// ===== LOAD ANIME (CACHED) =====
+// ===== FETCH ANIME =====
 async function loadAnime(){
   const cached = localStorage.getItem('animeCache');
-
-  if(cached){
-    animeData = JSON.parse(cached);
-    init();
-  } else {
-    const res = await fetch('https://api.jikan.moe/v4/top/anime');
-    const data = await res.json();
-    animeData = data.data.slice(0,20);
-
-    localStorage.setItem('animeCache', JSON.stringify(animeData));
-    init();
-  }
+  if(cached){ animeData = JSON.parse(cached); init(); return; }
+  const res = await fetch('https://api.jikan.moe/v4/top/anime');
+  const data = await res.json();
+  animeData = data.data.slice(0,20);
+  localStorage.setItem('animeCache', JSON.stringify(animeData));
+  init();
 }
 
-// ===== GET TRAILER =====
+// ===== TRAILER =====
 async function getTrailer(title){
   if(trailerCache[title]) return trailerCache[title];
-
   try{
-    const res = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(title+" anime trailer")}&key=${YT_KEY}`
-    );
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(title+" anime trailer")}&key=${YT_KEY}`);
     const data = await res.json();
     const id = data.items[0].id.videoId;
-
     const url = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1`;
-    trailerCache[title] = url;
-
-    localStorage.setItem('trailers', JSON.stringify(trailerCache));
+    trailerCache[title]=url;
+    localStorage.setItem('trailers',JSON.stringify(trailerCache));
     return url;
-  } catch {
-    return "https://www.youtube.com/embed/dQw4w9WgXcQ";
-  }
+  }catch{ return "https://www.youtube.com/embed/dQw4w9WgXcQ"; }
 }
 
 // ===== HERO ROTATION =====
-let heroIndex = 0;
-function setHero(a){
-  document.getElementById('hero').style.backgroundImage =
-    `url(${a.images.jpg.large_image_url})`;
-}
-
-setInterval(()=>{
-  if(animeData.length){
-    heroIndex = (heroIndex+1)%animeData.length;
-    setHero(animeData[heroIndex]);
-  }
-},5000);
+let heroIndex=0;
+function setHero(a){ document.getElementById('hero').style.backgroundImage=`url(${a.images.jpg.large_image_url})`; }
+setInterval(()=>{ if(animeData.length){ heroIndex=(heroIndex+1)%animeData.length; setHero(animeData[heroIndex]); } },5000);
 
 // ===== CREATE ROW =====
-function createRow(name,list){
-  const row=document.createElement('div');
-  row.className='row';
-  row.innerHTML=`<h2>${name}</h2><div class="scroll"></div>`;
-  const sc=row.querySelector('.scroll');
-
+function createRow(title,list){
+  const container=document.createElement('div'); container.className='row-container';
+  container.innerHTML=`<div class="row-title">${title}</div><div class="row-scroll"></div>`;
+  const scroll=container.querySelector('.row-scroll');
   list.forEach(a=>{
-    const c=document.createElement('div');
-    c.className='card';
-
+    const c=document.createElement('div'); c.className='card';
     c.innerHTML=`
       <img src="${a.images.jpg.image_url}">
       <iframe class="preview"></iframe>
@@ -187,137 +120,79 @@ function createRow(name,list){
       <span class="badge subdub">SUB/DUB</span>
       <span class="heart">${wishlist.includes(a.mal_id)?'💚':'🤍'}</span>
     `;
-
-    // Trailer hover
-    c.addEventListener('mouseenter', async ()=>{
-      c.querySelector('iframe').src = await getTrailer(a.title);
-    });
-    c.addEventListener('mouseleave', ()=>{
-      c.querySelector('iframe').src = "";
-    });
-
+    c.addEventListener('mouseenter', async()=>{ c.querySelector('iframe').src = await getTrailer(a.title); });
+    c.addEventListener('mouseleave',()=>{ c.querySelector('iframe').src=''; });
     c.onclick=()=>openPlayer(a);
-
-    // Wishlist
-    c.querySelector('.heart').onclick=(e)=>{
-      e.stopPropagation();
-      if(wishlist.includes(a.mal_id))
-        wishlist = wishlist.filter(id=>id!==a.mal_id);
-      else wishlist.push(a.mal_id);
-
-      localStorage.setItem('wishlist',JSON.stringify(wishlist));
-      load();
-    };
-
-    sc.appendChild(c);
+    c.querySelector('.heart').onclick=(e)=>{ e.stopPropagation(); wishlist.includes(a.mal_id)?wishlist=wishlist.filter(id=>id!==a.mal_id):wishlist.push(a.mal_id); localStorage.setItem('wishlist',JSON.stringify(wishlist)); load(); };
+    scroll.appendChild(c);
   });
-
-  return row;
+  return container;
 }
 
 // ===== LOAD UI =====
 function load(){
-  const content=document.getElementById('content');
-  content.innerHTML='';
-
-  content.appendChild(createRow('Continue Watching', history));
+  const content=document.getElementById('content'); content.innerHTML='';
+  content.appendChild(createRow('Jump Back In', history));
+  content.appendChild(createRow('Trending Now', animeData));
   content.appendChild(createRow('Top Rated', animeData));
-  content.appendChild(createRow('Trending', animeData));
-  content.appendChild(createRow('Airing Now', animeData));
+  content.appendChild(createRow('Now Playing', animeData));
+  content.appendChild(createRow('Most Popular', animeData));
   content.appendChild(createRow('Upcoming', animeData));
 }
 
-// ===== WISHLIST PAGE =====
+// ===== WISHLIST =====
 function showWishlist(){
-  const content=document.getElementById('content');
-  content.innerHTML='';
-  content.appendChild(createRow('Your Wishlist ❤️',
-    animeData.filter(a=>wishlist.includes(a.mal_id))
-  ));
+  const content=document.getElementById('content'); content.innerHTML='';
+  content.appendChild(createRow('Your Wishlist ❤️', animeData.filter(a=>wishlist.includes(a.mal_id))));
 }
 
 // ===== PLAYER =====
 async function openPlayer(a){
   document.getElementById('content').style.display='none';
   document.getElementById('player').style.display='block';
-
   document.getElementById('title').innerText=a.title;
-  document.getElementById('video').src = await getTrailer(a.title);
-
-  history.push(a);
-  localStorage.setItem('history',JSON.stringify(history));
-
+  document.getElementById('video').src=await getTrailer(a.title);
+  history.push(a); localStorage.setItem('history',JSON.stringify(history));
   const res = await fetch(`https://api.jikan.moe/v4/anime/${a.mal_id}/episodes`);
   const data = await res.json();
-
-  const epDiv=document.getElementById('episodes');
-  epDiv.innerHTML='';
-
+  const epDiv=document.getElementById('episodes'); epDiv.innerHTML='';
   data.data.slice(0,20).forEach(ep=>{
-    const btn=document.createElement('button');
-    btn.className='ep-btn';
+    const btn=document.createElement('button'); btn.className='ep-btn';
     btn.innerText=`EP ${ep.mal_id}`;
-    btn.onclick=()=>{
-      document.getElementById('video').src =
-        "https://www.youtube.com/embed/dQw4w9WgXcQ";
-    };
+    btn.onclick=()=>{ document.getElementById('video').src="https://www.youtube.com/embed/dQw4w9WgXcQ"; };
     epDiv.appendChild(btn);
   });
 }
 
 // ===== NAV =====
-function goHome(){
-  document.getElementById('player').style.display='none';
-  document.getElementById('content').style.display='block';
-  load();
-}
+function goHome(){ document.getElementById('player').style.display='none'; document.getElementById('content').style.display='block'; load(); }
 
 // ===== PROFILE =====
 function profile(){
   let user = localStorage.getItem('user');
-  if(!user){
-    user = prompt("Enter username");
-    localStorage.setItem('user',user);
-  } else {
-    if(confirm("Clear history?")){
-      localStorage.setItem('history','[]');
-    }
-  }
+  if(!user){ user = prompt("Enter username"); localStorage.setItem('user',user); } 
+  else { if(confirm("Clear history?")) localStorage.setItem('history','[]'); }
 }
 
 // ===== SEARCH =====
 document.getElementById('search').addEventListener('input',e=>{
   const val=e.target.value.toLowerCase();
   const filtered=animeData.filter(a=>a.title.toLowerCase().includes(val));
-
-  const content=document.getElementById('content');
-  content.innerHTML='';
+  const content=document.getElementById('content'); content.innerHTML='';
   content.appendChild(createRow('Search Results',filtered));
 });
 
 // ===== INSTALL =====
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt',(e)=>{
-  e.preventDefault();
-  deferredPrompt=e;
-});
-document.getElementById('installBtn').onclick=()=>{
-  if(deferredPrompt) deferredPrompt.prompt();
-};
+window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; });
+document.getElementById('installBtn').onclick=()=>{ if(deferredPrompt) deferredPrompt.prompt(); };
 
 // ===== INIT =====
-function init(){
-  setHero(animeData[0]);
-  load();
-}
-
+function init(){ setHero(animeData[0]); load(); }
 loadAnime();
 
 // ===== SERVICE WORKER =====
-if('serviceWorker' in navigator){
- navigator.serviceWorker.register('sw.js');
-}
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
-
 </body>
 </html>
