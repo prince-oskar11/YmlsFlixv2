@@ -2,329 +2,151 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>YmlAnime | Netflix Style</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-
   body {
-    background: #141414;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    margin: 0;
-    overflow-x: hidden;
-    -webkit-tap-highlight-color: transparent;
+    background-color: #141414;
+    font-family: 'Inter', sans-serif;
   }
-
-  /* Scrollbar hide */
+  /* Scrollbar hidden for carousels */
   .hide-scrollbar::-webkit-scrollbar { display: none; }
-
-  /* Card styles */
-  .anime-card {
-    min-width: 180px;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #222;
-    transition: transform 0.3s, box-shadow 0.3s;
-    cursor: pointer;
-  }
-  .anime-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-  }
-  .card-img {
-    width: 100%;
-    aspect-ratio: 2/3;
-    object-fit: cover;
-  }
-  .rating-badge {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    background: rgba(255, 0, 0, 0.8);
-    padding: 2px 6px;
+  /* Netflix-style buttons */
+  .btn-netflix {
+    background-color: #e50914;
+    color: white;
+    padding: 0.6rem 1.2rem;
     border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
     font-size: 12px;
-    font-weight: bold;
+    letter-spacing: 0.05em;
+    transition: background 0.3s;
   }
-
-  /* Show/hide pages */
-  .page-view {
-    display: none;
+  .btn-netflix:hover {
+    background-color: #f40612;
   }
-  .page-view.active-view {
-    display: block;
+  /* Card hover effect */
+  .card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.7);
   }
+  /* Hidden class for overlays */
+  .hidden { display: none; }
 </style>
 </head>
-<body>
+<body class="overflow-x-hidden">
 
-<!-- Choice Overlay -->
-<div id="choiceOverlay" onclick="this.style.display='none'" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[7000]" style="display:none;">
-  <div class="modal-box bg-gray-800 p-6 rounded-lg max-w-sm w-full" onclick="event.stopPropagation()">
-    <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
-    <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
-    <div class="space-y-3">
-      <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
-      <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
-      <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
-    </div>
+<!-- Header -->
+<header class="fixed top-0 w-full bg-black bg-opacity-80 z-50 px-8 py-4 flex items-center justify-between backdrop-blur-lg">
+  <h1 class="text-3xl font-bold text-red-600 cursor-pointer" onclick="showPage('home')">YMLSFLIX</h1>
+  <div class="flex items-center space-x-4">
+    <button class="text-white focus:outline-none" onclick="showPage('home')"><i class="fa fa-home text-xl"></i></button>
+    <button class="text-white focus:outline-none" onclick="showPage('wishlist')"><i class="fa fa-heart text-xl"></i></button>
+    <button class="text-white focus:outline-none" onclick="toggleDropdown('profileDrop')"><i class="fa fa-user-circle text-xl"></i></button>
   </div>
-</div>
-
-<!-- Trailer Overlay -->
-<div id="trailerOverlay" onclick="closeTrailer()" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[6000]">
-  <div class="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden mx-4 shadow-2xl border border-white/5">
-    <button onclick="closeTrailer()" class="absolute top-4 right-4 z-[6000] text-white bg-red-600 w-10 h-10 rounded-full font-black">✕</button>
-    <iframe id="trailerFrame" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-  </div>
-</div>
-
-<!-- Confirm Overlay -->
-<div id="confirmOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[7000]">
-  <div class="modal-box bg-gray-800 p-6 rounded-lg max-w-sm w-full">
-    <div class="w-16 h-16 bg-red-600/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-      <i class="fa fa-exclamation-triangle"></i>
-    </div>
-    <h3 class="text-white font-black uppercase text-xs mb-3 text-center">Hard Reset?</h3>
-    <p class="text-gray-500 text-[10px] mb-8 uppercase tracking-widest leading-loose text-center">This will wipe your account sync, history, and wishlist permanently.</p>
-    <div class="flex gap-3">
-      <button onclick="confirmClearHistory()" class="btn-red flex-1">Reset</button>
-      <button onclick="document.getElementById('confirmOverlay').style.display='none'" class="btn-red flex-1 bg-gray-800">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Navigation -->
-<nav class="fixed top-0 w-full z-[2500] glass p-5 transition-transform duration-300">
-  <div class="container mx-auto flex items-center justify-between">
-    <h1 class="text-2xl font-black logo-text cursor-pointer tracking-tighter" onclick="showPage('home')">YMLSFLIX PRO</h1>
-    <div class="flex items-center gap-7">
-      <i onclick="showPage('home')" class="fa fa-home text-gray-400 hover:text-white cursor-pointer text-2xl transition"></i>
-      <i onclick="showPage('wishlist')" class="fa fa-heart text-gray-400 hover:text-red-500 cursor-pointer text-2xl transition"></i>
-      <i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large text-gray-400 hover:text-white cursor-pointer text-xl transition"></i>
-      <i onclick="toggleDropdown('profileDrop')" class="fa fa-user-circle text-gray-400 hover:text-white cursor-pointer text-2xl transition"></i>
-    </div>
-  </div>
-  <div class="container mx-auto mt-6 px-1">
-    <div class="flex gap-3">
-      <div class="relative flex-1">
-        <i class="fa fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-500"></i>
-        <input type="text" id="searchBar" class="bg-[#111827] border border-[#1f2937] text-white pl-14 pr-5 py-4 rounded-2xl w-full outline-none focus:border-red-500 transition-all" placeholder="Search for anime, movies..." oninput="handleSearch(this.value)" />
-      </div>
-      <!-- Install Button -->
-      <button id="installBtn" class="hidden bg-indigo-600 text-[10px] font-black px-6 rounded-2xl uppercase tracking-widest hover:bg-indigo-500">Install</button>
-    </div>
-    <!-- Category Chips -->
-    <div class="flex gap-3 mt-5 overflow-x-auto no-scrollbar pb-1">
-      <div id="chip-TV" onclick="fetchByFormat('TV')" class="cat-chip">TV Series</div>
-      <div id="chip-MOVIE" onclick="fetchByFormat('MOVIE')" class="cat-chip">Movies</div>
-      <div id="chip-OVA" onclick="fetchByFormat('OVA')" class="cat-chip">OVA</div>
-      <div id="chip-SPECIAL" onclick="fetchByFormat('SPECIAL')" class="cat-chip">Special</div>
-    </div>
-  </div>
-
-  <!-- Dropdown Content: Genre & Year -->
-  <div id="genreDrop" class="dropdown-content hidden bg-gray-900 p-4 rounded-lg shadow-lg absolute top-16 left-0 z-[3000]">
-    <div class="flex mb-6 gap-6">
-      <button onclick="switchTab('genres')" id="tab-gen" class="flex-1 pb-3 font-black text-[11px] uppercase border-b-2 border-red-600 text-white">Categories</button>
-      <button onclick="switchTab('years')" id="tab-year" class="flex-1 pb-3 font-black text-[11px] uppercase text-gray-500">Year</button>
-    </div>
-    <div id="genreList" class="grid grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-2"></div>
-    <div id="yearList" class="grid grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-2 hidden"></div>
-  </div>
-
-  <!-- Profile Dropdown -->
-  <div id="profileDrop" class="dropdown-content hidden bg-gray-900 p-4 rounded-lg shadow-lg absolute top-16 right-0 z-[3000]">
-    <!-- Login/Register Box -->
-    <div id="authBox">
-      <h3 class="text-white font-black text-[10px] uppercase mb-6 text-center tracking-[0.3em]">Premium Sync</h3>
-      <input type="text" id="authEmail" placeholder="Enter Username" class="bg-[#111827] p-4 rounded-xl w-full mb-3 border border-[#1f2937] outline-none focus:border-accent" />
-      <input type="password" id="authPass" placeholder="Enter Password" class="bg-[#111827] p-4 rounded-xl w-full mb-6 border border-[#1f2937] outline-none focus:border-accent" />
-      <div class="flex gap-3">
-        <button onclick="handleAuth('login')" class="btn-red flex-1">Login</button>
-        <button onclick="handleAuth('signup')" class="btn-red flex-1 bg-gray-700">Register</button>
-      </div>
-    </div>
-    <!-- User Info Box -->
-    <div id="userBox" class="hidden text-center">
-      <div class="w-20 h-20 bg-gradient-to-tr from-red-600 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl font-black shadow-2xl">Y</div>
-      <h4 id="userDisplay" class="font-black text-white uppercase text-base mb-6 tracking-wider"></h4>
-      <button onclick="document.getElementById('confirmOverlay').style.display='flex'" class="btn-red bg-gray-900 mb-3 border border-red-900/40 text-red-500">Wipe All Cache</button>
-      <button onclick="handleLogout()" class="btn-red bg-red-950/30 text-red-500">Sign Out</button>
-    </div>
-  </div>
-</nav>
+</header>
 
 <!-- Main Content -->
-<div id="page-home" class="page-view active-view pt-56">
-  <!-- Hero Section -->
-  <header id="hero" class="relative bg-cover bg-center h-96" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
-    <div class="hero-grad absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"></div>
-    <div class="container mx-auto px-8 relative z-10 h-full flex flex-col justify-center">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="bg-red-600 text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-tighter">Editor's Choice</div>
-        <div class="text-white/50 text-[10px] font-bold uppercase"><i class="fa fa-star text-yellow-500 mr-1"></i> Top Trending</div>
-      </div>
-      <h2 id="heroTitle" class="text-5xl font-black mb-4 uppercase italic tracking-tighter leading-none max-w-3xl"></h2>
-      <div id="heroDesc" class="text-gray-400 text-xs max-w-lg line-clamp-3 mb-10 leading-relaxed font-medium"></div>
-      <div class="flex gap-4">
-        <button id="heroPlayBtn" class="bg-white text-black px-14 py-5 rounded-full font-black text-[11px] uppercase shadow-2xl hover:bg-red-600 hover:text-white transition-all active:scale-95">Stream Now</button>
-        <button id="heroTrailerBtn" class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-5 rounded-full font-black text-[11px] uppercase hover:bg-white/20 transition-all">Trailer</button>
-      </div>
-    </div>
-  </header>
+<div class="pt-20">
 
-  <!-- Sections for various content -->
-  <main class="container mx-auto p-6 space-y-20">
-    <!-- Jump Back In -->
-    <section id="continueSection" class="hidden">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-[11px] font-black uppercase text-red-500 tracking-[0.4em]">Jump Back In</h2>
-        <span class="text-[9px] text-gray-600 font-bold uppercase">Auto-Saved</span>
-      </div>
-      <div id="continueGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div>
-    </section>
-
-    <!-- Top Rated -->
-    <section class="mb-8">
-      <h2 class="text-white text-xl font-bold mb-4 uppercase border-l-4 border-red-600 pl-2">Top Rated</h2>
-      <div class="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar" id="ratedGrid"></div>
-    </section>
-
-    <!-- Now Playing -->
-    <section class="mb-8">
-      <h2 class="text-white text-xl font-bold mb-4 uppercase border-l-4 border-red-600 pl-2">Now Playing</h2>
-      <div class="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar" id="airingGrid"></div>
-    </section>
-
-    <!-- Most Popular -->
-    <section class="mb-8">
-      <h2 class="text-white text-xl font-bold mb-4 uppercase border-l-4 border-red-600 pl-2">Most Popular</h2>
-      <div class="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar" id="popularGrid"></div>
-    </section>
-
-    <!-- Upcoming -->
-    <section class="mb-8">
-      <h2 class="text-white text-xl font-bold mb-4 uppercase border-l-4 border-red-600 pl-2">Upcoming</h2>
-      <div class="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar" id="upcomingGrid"></div>
-    </section>
-  </main>
-</div>
-
-<!-- Additional Pages -->
-<div id="page-filter" class="page-view container mx-auto p-6 pt-72">
-  <h2 id="filterTitle" class="text-2xl font-black uppercase text-red-600 mb-10 border-l-8 border-red-600 pl-6 tracking-tighter">Explore Results</h2>
-  <div id="filterGrid" class="grid-full"></div>
-</div>
-
-<div id="page-wishlist" class="page-view container mx-auto p-6 pt-72">
-  <div class="flex items-center justify-between mb-10 border-l-8 border-red-600 pl-6">
-    <h2 class="text-2xl font-black uppercase text-red-600 tracking-tighter">My Wishlist</h2>
-    <div class="text-[10px] font-black text-gray-500 uppercase" id="wishCount">0 Items</div>
-  </div>
-  <div id="wishlistGrid" class="grid-full"></div>
-</div>
-
-<!-- Player View -->
-<div id="playerView" class="fixed inset-0 z-[4000] bg-[#05070a] hidden overflow-y-auto">
-  <div class="glass p-5 sticky top-0 flex justify-between items-center z-50">
-    <button onclick="closePlayer()" class="w-12 h-12 rounded-2xl bg-gray-900 hover:bg-gray-800 flex items-center justify-center transition"><i class="fa fa-chevron-left"></i></button>
-    <div class="text-center px-4 flex-1">
-      <h3 id="playerTitle" class="font-black text-[10px] uppercase truncate max-w-[250px] mx-auto text-gray-400 mb-2 tracking-widest"></h3>
-      <div class="flex gap-3 justify-center">
-        <button onclick="setMode('sub')" id="subBtn" class="px-6 py-2 text-[9px] font-black rounded-lg transition-all shadow-lg">SUB</button>
-        <button onclick="setMode('dub')" id="dubBtn" class="px-6 py-2 text-[9px] font-black rounded-lg transition-all shadow-lg">DUB</button>
-      </div>
-    </div>
-    <button onclick="closePlayer(); showPage('home');" class="w-12 h-12 rounded-2xl bg-gray-900 hover:bg-gray-800 flex items-center justify-center transition"><i class="fa fa-home"></i></button>
-  </div>
-  <div class="w-full aspect-video bg-black relative group" id="videoContainer">
-    <video id="player" playsinline controls class="w-full h-full"></video>
-    <div id="playerLoader" class="absolute inset-0 flex items-center justify-center bg-black/95 z-10 hidden">
-      <div class="text-center">
-        <div class="relative w-20 h-20 mx-auto mb-6">
-          <div class="absolute inset-0 border-4 border-red-600/20 rounded-full"></div>
-          <div class="absolute inset-0 border-4 border-red-600 rounded-full border-t-transparent animate-spin"></div>
+  <!-- Hero Banner -->
+  <section class="relative h-96 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+    <div class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+      <div class="text-center text-white px-4">
+        <h2 class="text-4xl md:text-6xl font-bold mb-4" id="heroTitle">Featured Anime Title</h2>
+        <p class="max-w-2xl mx-auto mb-6 text-sm md:text-base" id="heroDesc">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <div class="flex justify-center gap-4">
+          <button class="btn-netflix text-lg px-8 py-3" id="streamBtn">Stream Now</button>
+          <button class="btn-netflix text-lg px-8 py-3" id="trailerBtn">Trailer</button>
         </div>
-        <p class="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 animate-pulse">Syncing Servers...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content Sections -->
+  <section class="mt-8 px-4">
+    <!-- Example row: Top Rated -->
+    <h2 class="text-white text-xl font-semibold mb-4 border-l-4 border-red-600 pl-2">Top Rated</h2>
+    <div class="flex space-x-4 overflow-x-auto hide-scrollbar pb-4">
+      <!-- Example cards -->
+      <div class="w-48 flex-shrink-0 cursor-pointer card rounded-lg overflow-hidden bg-gray-800" onclick="showOverlay('Anime Title 1', 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80')">
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Anime 1" class="w-full h-60 object-cover" />
+        <div class="p-2 text-white text-sm font-semibold">Anime Title 1</div>
+        <div class="rating-badge absolute top-2 left-2 bg-red-600 px-2 py-1 text-xs font-bold rounded">8.9</div>
+      </div>
+      <!-- Repeat more cards as needed -->
+    </div>
+  </section>
+
+  <!-- Repeat similar sections for Now Playing, Popular, Upcoming -->
+  <!-- ... -->
+
+</div>
+
+<!-- Overlay for Details / Trailer -->
+<div id="overlay" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+  <div class="bg-gray-900 rounded-lg max-w-4xl w-full mx-4 p-4 relative overflow-hidden">
+    <button class="absolute top-2 right-2 text-white text-xl" onclick="closeOverlay()">✕</button>
+    <div class="flex flex-col md:flex-row gap-4">
+      <img id="overlayImage" src="" alt="" class="w-full md:w-1/2 h-64 object-cover rounded-lg" />
+      <div class="flex-1 text-white">
+        <h3 class="text-2xl mb-4" id="overlayTitle">Anime Title</h3>
+        <p id="overlayDescription">Description of the anime goes here...</p>
+        <div class="mt-4 flex space-x-4">
+          <button class="btn-netflix" onclick="startStreaming()">Play</button>
+          <button class="btn-netflix" onclick="showTrailer()">Trailer</button>
+        </div>
       </div>
     </div>
   </div>
-  <div class="p-8 container mx-auto">
-    <h2 class="text-[10px] font-black mb-5 uppercase text-gray-600 tracking-widest">Switch Server</h2>
-    <div id="serverList" class="flex gap-3 overflow-x-auto no-scrollbar mb-10 pb-2"></div>
-    <div class="flex flex-col sm:flex-row gap-4 mb-14">
-      <button id="trailerBtn" class="bg-indigo-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-indigo-500 transition-all"><i class="fa fa-video-camera mr-2"></i>Official Trailer</button>
-      <button onclick="nextEpisode()" class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all">Next Episode <i class="fa fa-chevron-right ml-2"></i></button>
-    </div>
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-[11px] font-black uppercase text-gray-500 tracking-[0.3em]">Episode Selector</h2>
-      <div id="totalEpDisplay" class="text-[10px] font-bold text-red-600"></div>
-    </div>
-    <div id="epList" class="flex gap-4 overflow-x-auto no-scrollbar mb-20 py-4"></div>
-    <h2 class="text-[11px] font-black mb-8 uppercase text-red-600 tracking-[0.5em] text-center">Similar Series Recommendations</h2>
-    <div id="recommendGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-12"></div>
+</div>
+
+<!-- Wishlist Page -->
+<div id="page-wishlist" class="hidden px-4 pt-20">
+  <h2 class="text-white text-2xl mb-4 border-l-4 border-red-600 pl-2">My Wishlist</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="wishlistGrid">
+    <!-- Wishlist items here -->
   </div>
 </div>
 
+<!-- Scripts -->
 <script>
-  // Your JavaScript code here
-  const API = 'https://graphql.anilist.co', STREAM_API = 'https://api.consumet.org/anime/gogoanime';
-  let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
-  let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
-
-  let focusIndex = 0;
-  let items = [];
-
-  function updateFocusable() {
-    items = [...document.querySelectorAll('.card, button')];
-    if (items.length === 0) return;
-    if (focusIndex >= items.length) focusIndex = items.length - 1;
-    highlightFocus();
+  function showPage(page) {
+    document.querySelectorAll('.page-view').forEach(p => p.classList.add('hidden'));
+    document.getElementById('page-' + page).classList.remove('hidden');
   }
 
-  function highlightFocus() {
-    items.forEach((el, i) => {
-      el.classList.toggle('focused', i === focusIndex);
-    });
+  function showOverlay(title, imageUrl) {
+    document.getElementById('overlay').classList.remove('hidden');
+    document.getElementById('overlayTitle').innerText = title;
+    document.getElementById('overlayImage').src = imageUrl;
   }
 
-  function navigate(dir) {
-    updateFocusable();
-    if (items.length === 0) return;
-    if (dir === 'right') focusIndex++;
-    if (dir === 'left') focusIndex--;
-    if (dir === 'down') focusIndex += 5; // adjust based on your layout
-    if (dir === 'up') focusIndex -= 5;
-    focusIndex = Math.max(0, Math.min(items.length - 1, focusIndex));
-    highlightFocus();
+  function closeOverlay() {
+    document.getElementById('overlay').classList.add('hidden');
   }
 
-  function selectItem() {
-    if (items[focusIndex]) {
-      items[focusIndex].click();
-    }
+  function startStreaming() {
+    alert('Start streaming logic here');
   }
 
-  document.addEventListener('keydown', (e) => {
-    switch (e.key) {
-      case 'ArrowRight': navigate('right'); break;
-      case 'ArrowLeft': navigate('left'); break;
-      case 'ArrowDown': navigate('down'); break;
-      case 'ArrowUp': navigate('up'); break;
-      case 'Enter': selectItem(); break;
-    }
-  });
+  function showTrailer() {
+    alert('Trailer modal or iframe here');
+  }
 
-  // Your other functions like handleAuth, openPlayer, closePlayer, etc.
-  // ...
-  // You should insert your existing JavaScript code here
+  function toggleDropdown(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('hidden');
+  }
+
+  // Additional functions to load content, handle search, etc.
 </script>
 
 </body>
