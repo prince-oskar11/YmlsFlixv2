@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
   body {
     background: #141414;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -19,6 +21,7 @@
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
   }
+
   /* Scrollbar hide */
   .hide-scrollbar::-webkit-scrollbar { display: none; }
 
@@ -50,6 +53,15 @@
     font-size: 12px;
     font-weight: bold;
   }
+
+  /* Show/hide pages */
+  .page-view {
+    display: none;
+  }
+  .page-view.active-view {
+    display: block;
+  }
+</style>
 </head>
 <body>
 
@@ -64,6 +76,44 @@
             </div>
         </div>
     </div>
+
+    <div id="trailerOverlay" onclick="closeTrailer()">
+        <div class="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden mx-4 shadow-2xl border border-white/5">
+            <button onclick="closeTrailer()" class="absolute top-4 right-4 z-[6000] text-white bg-red-600 w-10 h-10 rounded-full font-black">✕</button>
+            <iframe id="trailerFrame" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div id="confirmOverlay">
+        <div class="modal-box">
+            <div class="w-16 h-16 bg-red-600/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-white font-black uppercase text-xs mb-3">Hard Reset?</h3>
+            <p class="text-gray-500 text-[10px] mb-8 uppercase tracking-widest leading-loose">This will wipe your account sync, history, and wishlist permanently.</p>
+            <div class="flex gap-3">
+                <button onclick="confirmClearHistory()" class="btn-red flex-1">Reset</button>
+                <button onclick="document.getElementById('confirmOverlay').style.display='none'" class="btn-red flex-1 bg-gray-800">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fixed top-0 w-full z-[2500] glass p-5">
+        <div class="container mx-auto flex items-center justify-between">
+            <h1 class="text-2xl font-black logo-text cursor-pointer tracking-tighter" onclick="showPage('home')">YMLSFLIX PRO</h1>
+            <div class="flex items-center gap-7">
+                <i onclick="showPage('home')" class="fa fa-home text-gray-400 hover:text-white cursor-pointer text-2xl transition"></i>
+                <i onclick="showPage('wishlist')" class="fa fa-heart text-gray-400 hover:text-red-500 cursor-pointer text-2xl transition"></i>
+                <i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large text-gray-400 hover:text-white cursor-pointer text-xl transition"></i>
+                <i onclick="toggleDropdown('profileDrop')" class="fa fa-user-circle text-gray-400 hover:text-white cursor-pointer text-2xl transition"></i>
+            </div>
+        </div>
+        <div class="container mx-auto mt-6 px-1">
+            <div class="flex gap-3">
+                <div class="relative flex-1">
+                    <i class="fa fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <input type="text" id="searchBar" class="bg-[#111827] border border-[#1f2937] text-white pl-14 pr-5 py-4 rounded-2xl w-full outline-none focus:border-red-500 transition-all" placeholder="Search for anime, movies..." oninput="handleSearch(this.value)" />
+                </div>
 
     <div id="trailerOverlay" onclick="closeTrailer()">
         <div class="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden mx-4 shadow-2xl border border-white/5">
