@@ -50,40 +50,120 @@
     font-size: 12px;
     font-weight: bold;
   }
-</style>
 </head>
-<body class="text-gray-200">
+<body>
 
-<!-- Navbar -->
-<nav class="fixed top-0 w-full z-50 bg-black bg-opacity-70 px-8 py-4 flex items-center justify-between backdrop-blur-lg">
-  <div class="flex items-center space-x-4">
-    <div class="text-red-600 text-3xl font-bold cursor-pointer" onclick="showPage('home')">YmlAnime</div>
-  </div>
-  <div class="flex items-center space-x-6 text-white text-xl">
-    <i class="fa fa-search cursor-pointer" onclick="showPage('search')"></i>
-    <i class="fa fa-bell cursor-pointer"></i>
-    <i class="fa fa-user-circle cursor-pointer" onclick="toggleDropdown('profileDrop')"></i>
-  </div>
-</nav>
-
-<!-- Hero Banner -->
-<header id="hero" class="mt-16 h-[60vh] bg-cover bg-center relative rounded-lg overflow-hidden shadow-lg" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
-  <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-4">
-    <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 uppercase max-w-3xl">Discover the Best Anime & Movies</h2>
-    <div class="flex gap-4 mt-4">
-      <button class="bg-red-600 text-white px-8 py-3 rounded-lg font-bold uppercase hover:bg-red-700 transition">Stream Now</button>
-      <button class="bg-gray-800 text-white px-8 py-3 rounded-lg font-bold uppercase hover:bg-gray-700 transition">Watch Trailer</button>
+    <div id="choiceOverlay" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
+            <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
+            <div class="space-y-3">
+                <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
+                <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
+                <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
+            </div>
+        </div>
     </div>
-  </div>
-</header>
 
-<!-- Main Content with categories -->
-<main class="mt-8 px-4">
-  <!-- Trending Now -->
-  <section class="mb-8">
-    <h2 class="text-white text-xl font-bold mb-4 uppercase border-l-4 border-red-600 pl-2">Trending Now</h2>
-    <div class="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar" id="trendingGrid"></div>
-  </section>
+    <div id="trailerOverlay" onclick="closeTrailer()">
+        <div class="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden mx-4 shadow-2xl border border-white/5">
+            <button onclick="closeTrailer()" class="absolute top-4 right-4 z-[6000] text-white bg-red-600 w-10 h-10 rounded-full font-black">✕</button>
+            <iframe id="trailerFrame" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div id="confirmOverlay">
+        <div class="modal-box">
+            <div class="w-16 h-16 bg-red-600/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-white font-black uppercase text-xs mb-3">Hard Reset?</h3>
+            <p class="text-gray-500 text-[10px] mb-8 uppercase tracking-widest leading-loose">This will wipe your account sync, history, and wishlist permanently.</p>
+            <div class="flex gap-3">
+                <button onclick="confirmClearHistory()" class="btn-red flex-1">Reset</button>
+                <button onclick="document.getElementById('confirmOverlay').style.display='none'" class="btn-red flex-1 bg-gray-800">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fixed top-0 w-full z-[2500] glass p-5">
+        <div class="container mx-auto flex items-center justify-between">
+            <h1 class="text-2xl font-black logo-text cursor-pointer tracking-tighter" onclick="showPage('home')">YMLSFLIX PRO</h1>
+            <div class="flex items-center gap-7">
+                <i onclick="showPage('home')" class="fa fa-home text-gray-400 hover:text-white cursor-pointer text-2xl transition"></i>
+                <i onclick="showPage('wishlist')" class="fa fa-heart text-gray-400 hover:text-red-500 cursor-pointer text-2xl transition"></i>
+                <i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large text-gray-400 hover:text-white cursor-pointer text-xl transition"></i>
+                <i onclick="toggleDropdown('profileDrop')" class="fa fa-user-circle text-gray-400 hover:text-white cursor-pointer text-2xl transition"></i>
+            </div>
+        </div>
+        <div class="container mx-auto mt-6 px-1">
+            <div class="flex gap-3">
+                <div class="relative flex-1">
+                    <i class="fa fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <input type="text" id="searchBar" class="bg-[#111827] border border-[#1f2937] text-white pl-14 pr-5 py-4 rounded-2xl w-full outline-none focus:border-red-500 transition-all" placeholder="Search for anime, movies..." oninput="handleSearch(this.value)" />
+                </div>
+                <button id="installBtn" onclick="triggerInstall()" class="hidden bg-indigo-600 text-[10px] font-black px-6 rounded-2xl uppercase tracking-widest hover:bg-indigo-500">Install</button>
+            </div>
+            <div class="flex gap-3 mt-5 overflow-x-auto no-scrollbar pb-1">
+                <div id="chip-TV" onclick="fetchByFormat('TV')" class="cat-chip">TV Series</div>
+                <div id="chip-MOVIE" onclick="fetchByFormat('MOVIE')" class="cat-chip">Movies</div>
+                <div id="chip-OVA" onclick="fetchByFormat('OVA')" class="cat-chip">OVA</div>
+                <div id="chip-SPECIAL" onclick="fetchByFormat('SPECIAL')" class="cat-chip">Special</div>
+            </div>
+        </div>
+
+        <div id="genreDrop" class="dropdown-content">
+            <div class="flex mb-6 gap-6">
+                <button onclick="switchTab('genres')" id="tab-gen" class="flex-1 pb-3 font-black text-[11px] uppercase border-b-2 border-red-600 text-white">Categories</button>
+                <button onclick="switchTab('years')" id="tab-year" class="flex-1 pb-3 font-black text-[11px] uppercase text-gray-500">Year</button>
+            </div>
+            <div id="genreList" class="grid grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-2"></div>
+            <div id="yearList" class="grid grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-2 hidden"></div>
+        </div>
+
+        <div id="profileDrop" class="dropdown-content">
+            <div id="authBox">
+                <h3 class="text-white font-black text-[10px] uppercase mb-6 text-center tracking-[0.3em]">Premium Sync</h3>
+                <input type="text" id="authEmail" placeholder="Enter Username" class="bg-[#111827] p-4 rounded-xl w-full mb-3 border border-[#1f2937] outline-none focus:border-accent" />
+                <input type="password" id="authPass" placeholder="Enter Password" class="bg-[#111827] p-4 rounded-xl w-full mb-6 border border-[#1f2937] outline-none focus:border-accent" />
+                <div class="flex gap-3">
+                    <button onclick="handleAuth('login')" class="btn-red flex-1">Login</button>
+                    <button onclick="handleAuth('signup')" class="btn-red flex-1 bg-gray-700">Register</button>
+                </div>
+            </div>
+            <div id="userBox" class="hidden text-center">
+                <div class="w-20 h-20 bg-gradient-to-tr from-red-600 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl font-black shadow-2xl">Y</div>
+                <h4 id="userDisplay" class="font-black text-white uppercase text-base mb-6 tracking-wider"></h4>
+                <button onclick="document.getElementById('confirmOverlay').style.display='flex'" class="btn-red bg-gray-900 mb-3 border border-red-900/40 text-red-500">Wipe All Cache</button>
+                <button onclick="handleLogout()" class="btn-red bg-red-950/30 text-red-500">Sign Out</button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="page-home" class="page-view active-view pt-56">
+        <header id="hero">
+            <div class="hero-grad"></div>
+            <div class="container mx-auto px-8 relative z-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-red-600 text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-tighter">Editor's Choice</div>
+                    <div class="text-white/50 text-[10px] font-bold uppercase"><i class="fa fa-star text-yellow-500 mr-1"></i> Top Trending</div>
+                </div>
+                <h2 id="heroTitle" class="text-5xl font-black mb-4 uppercase italic tracking-tighter leading-none max-w-3xl"></h2>
+                <div id="heroDesc" class="text-gray-400 text-xs max-w-lg line-clamp-3 mb-10 leading-relaxed font-medium"></div>
+                <div class="flex gap-4">
+                    <button id="heroPlayBtn" class="bg-white text-black px-14 py-5 rounded-full font-black text-[11px] uppercase shadow-2xl hover:bg-red-600 hover:text-white transition-all active:scale-95">Stream Now</button>
+                    <button id="heroTrailerBtn" class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-5 rounded-full font-black text-[11px] uppercase hover:bg-white/20 transition-all">Trailer</button>
+                </div>
+            </div>
+        </header>
+        <main class="container mx-auto p-6 space-y-20">
+            <section id="continueSection" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-[11px] font-black uppercase text-red-500 tracking-[0.4em]">Jump Back In</h2>
+                    <span class="text-[9px] text-gray-600 font-bold uppercase">Auto-Saved</span>
+                </div>
+                <div id="continueGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div>
+</section>
   <!-- Top Rated -->
   <section class="mb-8">
     <h2 class="text-white text-xl font-bold mb-4 uppercase border-l-4 border-red-600 pl-2">Top Rated</h2>
