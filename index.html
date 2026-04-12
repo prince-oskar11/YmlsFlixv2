@@ -2,43 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>YMLAnime | Netflix Style</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>YmlAnime | Ultimate Anime Streaming</title>
+<link rel="manifest" href="manifest.json" />
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <style>
-  body {
-    background-color: #141414;
-    font-family: 'Inter', sans-serif;
-  }
-  /* Scrollbar hidden for carousels */
-  .hide-scrollbar::-webkit-scrollbar { display: none; }
-  /* Netflix-style buttons */
-  .btn-netflix {
-    background-color: #e50914;
-    color: white;
-    padding: 0.6rem 1.2rem;
-    border-radius: 4px;
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.05em;
-    transition: background 0.3s;
-  }
-  .btn-netflix:hover {
-    background-color: #f40612;
-  }
-  /* Card hover effect */
-  .card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.7);
-  }
-  /* Hidden class for overlays */
-  .hidden { display: none; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+  :root { --plyr-color-main: #ef4444; --bg: #000; --card: #141414; --accent: #6366f1; }
+  body { background: var(--bg); color: #e2e8f0; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; font-size: 13px; }
+  /* Hide scrollbar for scroll sections */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 </style>
 </head>
 <body class="overflow-x-hidden">
