@@ -2,24 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>JUIXY - Juice & Dessert App</title>
-
-<!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json" />
-
-<!-- Theme color for mobile browsers -->
-<meta name="theme-color" content="#f5deb3" />
-
 <style>
   body {
     font-family: Arial, sans-serif;
     margin:0; padding:0;
-    background-color: #f5deb3;
+    background-color: #f5deb3; /* beige background */
   }
-  /* Header with centered "JX" */
+  /* Header styles */
   #header {
-    background-color: #f5deb3;
+    background-color: #4CAF50; /* green background */
     padding: 20px;
     text-align: center;
     position: relative;
@@ -27,21 +19,14 @@
   #header h1 {
     margin: 0;
     font-size: 36px;
-    color: green;
+    color: green; /* name in green */
   }
-  /* Install App button top-left */
-  #installBtn {
-    position: absolute;
-    top: 10px;
-    left: 20px;
-  }
-  #installBtn:hover { background-color: #45a049; }
-
-  /* Clear Counts button top-right */
+  /* Top buttons container */
   #topButtons {
     position: absolute;
     top: 20px;
-    right: 20px;
+    width: 100%;
+    display: flex; justify-content: space-between; padding: 0 20px;
   }
   #topButtons button {
     padding: 8px 16px;
@@ -50,8 +35,8 @@
     cursor: pointer;
     font-weight: bold;
   }
+  #stockBtn { background-color: #2196F3; color: white; }
   #clearBtn { background-color: #f44336; color: white; }
-
   /* Navigation styles */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
@@ -60,32 +45,23 @@
     cursor: pointer; font-weight: bold; color: green; font-size: 18px; padding: 8px 12px; border-radius: 4px; transition: background 0.3s;
   }
   #nav span:hover { background-color: #c8e6c9; }
-
-  /* Sections styles */
+  /* Main content style */
   section {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   section.active { display: block; }
-  h2 {
-    color: brown;
-    margin-top: 0;
-  }
-  .item { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+  /* Section headers in brown */
+  h2 { color: brown; margin-top: 0; }
+  /* Items list styles */
+  .item { display: flex; align-items: center; margin-bottom: 10px; }
   .itemName { flex: 1; font-size: 16px; }
-  .manageButtons button {
-    margin: 0 5px;
-    padding: 4px 8px;
-    border: none;
-    border-radius: 4px;
-    cursor:pointer;
-    background-color: #4CAF50;
-    color: white;
-    font-weight: bold;
-  }
-  .manageButtons button:hover { background-color: #45a049; }
+  .counter { width: 50px; text-align: center; font-weight: bold; }
+  button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
+  button:hover { background-color: #45a049; }
+  /* X button styling */
   .deleteBtn {
-    background-color: #f44336;
+    background-color: #f44336; /* red */
     color: white;
     padding: 2px 6px;
     border: none;
@@ -94,6 +70,7 @@
     margin-left: 10px;
     cursor: pointer;
   }
+  /* Add item input styles */
   .addSection {
     margin-bottom: 15px;
   }
@@ -104,31 +81,190 @@
     padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius:4px; cursor:pointer;
   }
   .addSection button:hover { background-color: #0b7dda; }
+  /* Add stock input styles */
+  .stockSection {
+    margin-top: 10px; margin-bottom: 20px;
+  }
+  .stockSection input {
+    padding: 8px; width: 100px; margin-right: 10px; border: 1px solid #ccc; border-radius:4px;
+  }
+  /* Sales summary styles */
+  #summary {
+    max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  }
+  #summary h2 { margin-top: 0; cursor:pointer; }
+  /* Top salers list */
+  #topSaler {
+    margin-top: 20px;
+  }
 </style>
+<script>
+  // Initialize data storage
+  let dataSections = {
+    'Juice': {},
+    'Milk-Cake': {},
+    'Tiramisu': {},
+    'Matcha': {},
+    'Mojito': {}
+  };
+  // Load stock data separately
+  let stockData = JSON.parse(localStorage.getItem('Stock')) || {};
+
+  for (let key in dataSections) {
+    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
+  }
+
+  function saveData() {
+    for (let section in dataSections) {
+      localStorage.setItem(section, JSON.stringify(dataSections[section]));
+    }
+    localStorage.setItem('Stock', JSON.stringify(stockData));
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Add new item
+  function addItem(sectionName, inputId) {
+    const name = document.getElementById(inputId).value.trim();
+    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
+    dataSections[sectionName][name] = 0;
+    document.getElementById(inputId).value = '';
+    displaySectionItems(sectionName);
+    updateSummary();
+    saveData();
+  }
+
+  // Display section items
+  function displaySectionItems(sectionName) {
+    const container = document.getElementById('itemsContainer_' + sectionName);
+    if (!container) return;
+    container.innerHTML = '';
+    const items = dataSections[sectionName];
+    for (const name in items) {
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const n = document.createElement('span');
+      n.className = 'itemName';
+      n.innerText = name;
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateSummary(); saveData(); } };
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'counter';
+      countSpan.innerText = items[name];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateSummary(); saveData(); };
+
+      // delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerText = 'X';
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.onclick = () => {
+        if (confirm('Are you sure you want to delete "' + name + '"?')) {
+          delete dataSections[sectionName][name];
+          displaySectionItems(sectionName);
+          updateSummary();
+          saveData();
+        }
+      };
+
+      div.appendChild(n);
+      div.appendChild(minusBtn);
+      div.appendChild(countSpan);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      container.appendChild(div);
+    }
+  }
+
+  // Reset all counts
+  function resetCounts() {
+    if (confirm('Are you sure you want to reset all counts to zero?')) {
+      for (let section in dataSections) {
+        for (let item in dataSections[section]) {
+          dataSections[section][item] = 0;
+        }
+        displaySectionItems(section);
+      }
+      saveData();
+      updateSummary();
+    }
+  }
+
+  // Show top seller
+  function showTopSaler() {
+    let totalSales = {};
+    for (let section in dataSections) {
+      for (const name in dataSections[section]) {
+        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
+      }
+    }
+    let maxCount = -1;
+    let topItem = '';
+    for (const name in totalSales) {
+      if (totalSales[name] > maxCount) {
+        maxCount = totalSales[name];
+        topItem = name;
+      }
+    }
+    alert(`Top Seller: ${topItem} with ${maxCount} sales`);
+  }
+
+  // Add stock to a category
+  function addStock(category) {
+    const inputId = 'stockInput_' + category;
+    const qty = parseInt(document.getElementById(inputId).value);
+    if (isNaN(qty) || qty <= 0) {
+      alert('Enter a valid number');
+      return;
+    }
+    stockData[category] = (stockData[category] || 0) + qty;
+    document.getElementById(inputId).value = '';
+    saveData();
+    alert('Stock added successfully');
+  }
+
+  // Show page
+  window.onload = () => {
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
+    updateSummary();
+  };
+</script>
 </head>
 <body>
 
-<!-- Header with centered "JX" -->
+<!-- Header with name and buttons -->
 <div id="header">
-  <h1 style="margin:0;">JX</h1>
-  <button id="installBtn" onclick="promptInstall()">Install App</button>
-  <div id="topButtons" style="position:absolute; top:20px; right:20px;">
+  <h1 style="margin:0; color:green;">JUIXY</h1>
+  <!-- Top left and right buttons -->
+  <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
+    <button id="stockBtn" onclick="alert('Stock management not fully implemented')">Stock</button>
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
 </div>
 
-<!-- Navigation -->
+<!-- Navigation menu -->
 <div id="nav">
   <span onclick="showSection('Juice')">Juice</span>
   <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
-  <span onclick="showSection('Sandwich')">Sandwich</span>
-  <span style="cursor:pointer; font-weight:bold; color:green;" onclick="showSection('TopSaler')">Top Seller</span>
+  <span onclick="showTopSaler()">Sales Summary</span>
 </div>
 
-<!-- Category Sections -->
+<!-- Sections with add list and stock add -->
+<!-- Juice -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
   <div class="addSection">
@@ -137,7 +273,14 @@
   </div>
   <h3>Juice List</h3>
   <div id="itemsContainer_Juice"></div>
+  <h3>Add Stock to Juice</h3>
+  <div class="stockSection">
+    <input type="number" id="stockInput_Juice" placeholder="Quantity" />
+    <button onclick="addStock('Juice')">Add to Stock</button>
+  </div>
 </section>
+
+<!-- Milk-Cake -->
 <section id="Milk-Cake">
   <h2>Add New Milk-Cake</h2>
   <div class="addSection">
@@ -146,7 +289,14 @@
   </div>
   <h3>Milk-Cake List</h3>
   <div id="itemsContainer_Milk-Cake"></div>
+  <h3>Add Stock to Milk-Cake</h3>
+  <div class="stockSection">
+    <input type="number" id="stockInput_Milk-Cake" placeholder="Quantity" />
+    <button onclick="addStock('Milk-Cake')">Add to Stock</button>
+  </div>
 </section>
+
+<!-- Tiramisu -->
 <section id="Tiramisu">
   <h2>Add New Tiramisu</h2>
   <div class="addSection">
@@ -155,7 +305,14 @@
   </div>
   <h3>Tiramisu List</h3>
   <div id="itemsContainer_Tiramisu"></div>
+  <h3>Add Stock to Tiramisu</h3>
+  <div class="stockSection">
+    <input type="number" id="stockInput_Tiramisu" placeholder="Quantity" />
+    <button onclick="addStock('Tiramisu')">Add to Stock</button>
+  </div>
 </section>
+
+<!-- Matcha -->
 <section id="Matcha">
   <h2>Add New Matcha</h2>
   <div class="addSection">
@@ -164,7 +321,14 @@
   </div>
   <h3>Matcha List</h3>
   <div id="itemsContainer_Matcha"></div>
+  <h3>Add Stock to Matcha</h3>
+  <div class="stockSection">
+    <input type="number" id="stockInput_Matcha" placeholder="Quantity" />
+    <button onclick="addStock('Matcha')">Add to Stock</button>
+  </div>
 </section>
+
+<!-- Mojito -->
 <section id="Mojito">
   <h2>Add New Mojito</h2>
   <div class="addSection">
@@ -173,68 +337,41 @@
   </div>
   <h3>Mojito List</h3>
   <div id="itemsContainer_Mojito"></div>
-</section>
-<section id="Sandwich">
-  <h2>Add New Sandwich</h2>
-  <div class="addSection">
-    <input type="text" id="sandwichInput" placeholder="Enter Sandwich name" />
-    <button onclick="addItem('Sandwich', 'sandwichInput')">Add Sandwich</button>
+  <h3>Add Stock to Mojito</h3>
+  <div class="stockSection">
+    <input type="number" id="stockInput_Mojito" placeholder="Quantity" />
+    <button onclick="addStock('Mojito')">Add to Stock</button>
   </div>
-  <h3>Sandwich List</h3>
-  <div id="itemsContainer_Sandwich"></div>
 </section>
 
-<!-- Top Seller (no back button) -->
-<section id="TopSaler">
-  <h2>Top Seller</h2>
-  <pre id="topSalerDetails" style="white-space: pre-wrap;"></pre>
-</section>
+<h2>Sales Summary</h2>
+<div id="summary"></div>
 
 <script>
-  // Data storage
-  let dataSections = {
-    'Juice': {},
-    'Milk-Cake': {},
-    'Tiramisu': {},
-    'Matcha': {},
-    'Mojito': {},
-    'Sandwich': {}
-  };
-
-  // Load existing data
-  for (let key in dataSections) {
-    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
-  }
-
-  function saveData() {
-    for (let sec in dataSections) {
-      localStorage.setItem(sec, JSON.stringify(dataSections[sec]));
-    }
-  }
-
+  // show section
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('#TopSaler').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  function addItem(section, inputId) {
+  // Add new item
+  function addItem(sectionName, inputId) {
     const name = document.getElementById(inputId).value.trim();
-    if (!name || dataSections[section][name]) {
-      alert('Invalid or duplicate name');
-      return;
-    }
-    dataSections[section][name] = 0;
+    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
+    dataSections[sectionName][name] = 0;
     document.getElementById(inputId).value = '';
-    displayItems(section);
+    displaySectionItems(sectionName);
+    updateSummary();
     saveData();
   }
 
-  function displayItems(section) {
-    const container = document.getElementById('itemsContainer_' + section);
+  // Display items
+  function displaySectionItems(sectionName) {
+    const container = document.getElementById('itemsContainer_' + sectionName);
     if (!container) return;
     container.innerHTML = '';
-    for (const name in dataSections[section]) {
+    const items = dataSections[sectionName];
+    for (const name in items) {
       const div = document.createElement('div');
       div.className = 'item';
 
@@ -242,47 +379,55 @@
       n.className = 'itemName';
       n.innerText = name;
 
-      const btnDiv = document.createElement('div');
-      btnDiv.className = 'manageButtons';
-
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (dataSections[section][name] > 0) { dataSections[section][name]--; displayItems(section); saveData(); } };
+      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateSummary(); saveData(); } };
 
       const countSpan = document.createElement('span');
-      countSpan.innerText = dataSections[section][name];
+      countSpan.className = 'counter';
+      countSpan.innerText = items[name];
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { dataSections[section][name]++; displayItems(section); saveData(); };
+      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateSummary(); saveData(); };
 
+      // delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = 'X';
       deleteBtn.className = 'deleteBtn';
       deleteBtn.onclick = () => {
-        if (confirm('Delete "' + name + '"?')) {
-          delete dataSections[section][name];
+        if (confirm('Are you sure you want to delete "' + name + '"?')) {
+          delete dataSections[sectionName][name];
+          displaySectionItems(sectionName);
+          updateSummary();
           saveData();
-          displayItems(section);
         }
       };
 
-      btnDiv.appendChild(minusBtn);
-      btnDiv.appendChild(countSpan);
-      btnDiv.appendChild(plusBtn);
-      btnDiv.appendChild(deleteBtn);
-
       div.appendChild(n);
-      div.appendChild(btnDiv);
+      div.appendChild(minusBtn);
+      div.appendChild(countSpan);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
       container.appendChild(div);
     }
   }
 
-  // Initial load
-  for (let section in dataSections) {
-    displayItems(section);
+  // Reset all counts
+  function resetCounts() {
+    if (confirm('Are you sure you want to reset all counts to zero?')) {
+      for (let section in dataSections) {
+        for (let item in dataSections[section]) {
+          dataSections[section][item] = 0;
+        }
+        displaySectionItems(section);
+      }
+      saveData();
+      updateSummary();
+    }
   }
 
+  // show top seller
   function showTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -290,55 +435,38 @@
         totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
       }
     }
-    const sortedItems = Object.entries(totalSales).sort((a, b) => b[1] - a[1]);
-    let displayText = 'Items sold (highest to lowest):\n';
-    for (const [name, count] of sortedItems) {
-      displayText += `${name}: ${count}\n`;
-    }
-    document.getElementById('topSalerDetails').innerText = displayText;
-    showSection('TopSaler');
-  }
-
-  function resetCounts() {
-    if (confirm('Are you sure you want to reset all counts to zero?')) {
-      for (let section in dataSections) {
-        for (let item in dataSections[section]) {
-          dataSections[section][item] = 0;
-        }
-        displayItems(section);
+    let maxCount = -1;
+    let topItem = '';
+    for (const name in totalSales) {
+      if (totalSales[name] > maxCount) {
+        maxCount = totalSales[name];
+        topItem = name;
       }
-      saveData();
     }
+    alert(`Top Seller: ${topItem} with ${maxCount} sales`);
   }
 
-  // PWA install prompt
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  function promptInstall() {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        deferredPrompt = null;
-      });
-    } else {
-      alert('Install prompt not available');
+  // Add stock to category
+  function addStock(category) {
+    const inputId = 'stockInput_' + category;
+    const qty = parseInt(document.getElementById(inputId).value);
+    if (isNaN(qty) || qty <= 0) {
+      alert('Enter a valid number');
+      return;
     }
+    stockData[category] = (stockData[category] || 0) + qty;
+    document.getElementById(inputId).value = '';
+    saveData();
+    alert('Stock added successfully');
   }
 
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js').then(registration => {
-        console.log('Service Worker registered with scope:', registration.scope);
-      }).catch(error => {
-        console.log('Service Worker registration failed:', error);
-      });
-    });
-  }
+  // On page load
+  window.onload = () => {
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
+    updateSummary();
+  };
 </script>
 </body>
 </html>
