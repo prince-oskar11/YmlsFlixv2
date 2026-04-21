@@ -2,16 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>JUIXY - Juice & Dessert App</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json" />
+
+<!-- Theme color for mobile browsers -->
+<meta name="theme-color" content="#f5deb3" />
+
 <style>
   body {
     font-family: Arial, sans-serif;
     margin:0; padding:0;
     background-color: #f5deb3;
   }
+  /* Header with centered "JX" */
   #header {
     background-color: #f5deb3;
     padding: 20px;
+    text-align: center;
     position: relative;
   }
   #header h1 {
@@ -19,25 +29,19 @@
     font-size: 36px;
     color: green;
   }
+  /* Install App button top-left */
   #installBtn {
     position: absolute;
     top: 10px;
     left: 20px;
-    padding: 8px 12px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
   }
   #installBtn:hover { background-color: #45a049; }
 
+  /* Clear Counts button top-right */
   #topButtons {
     position: absolute;
     top: 20px;
     right: 20px;
-    display: flex; gap: 10px;
   }
   #topButtons button {
     padding: 8px 16px;
@@ -48,6 +52,7 @@
   }
   #clearBtn { background-color: #f44336; color: white; }
 
+  /* Navigation styles */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
   }
@@ -56,6 +61,7 @@
   }
   #nav span:hover { background-color: #c8e6c9; }
 
+  /* Sections styles */
   section {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
@@ -102,14 +108,16 @@
 </head>
 <body>
 
+<!-- Header with centered "JX" -->
 <div id="header">
-  <h1 style="margin:0;">JUIXY</h1>
-  <button id="installBtn" onclick="alert('Install app as a shortcut or PWA')">Install App</button>
+  <h1 style="margin:0;">JX</h1>
+  <button id="installBtn" onclick="promptInstall()">Install App</button>
   <div id="topButtons" style="position:absolute; top:20px; right:20px;">
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
 </div>
 
+<!-- Navigation -->
 <div id="nav">
   <span onclick="showSection('Juice')">Juice</span>
   <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
@@ -120,7 +128,7 @@
   <span style="cursor:pointer; font-weight:bold; color:green;" onclick="showSection('TopSaler')">Top Seller</span>
 </div>
 
-<!-- Category sections -->
+<!-- Category Sections -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
   <div class="addSection">
@@ -176,14 +184,14 @@
   <div id="itemsContainer_Sandwich"></div>
 </section>
 
-<!-- Top Seller page -->
+<!-- Top Seller (no back button) -->
 <section id="TopSaler">
   <h2>Top Seller</h2>
   <pre id="topSalerDetails" style="white-space: pre-wrap;"></pre>
-  <button onclick="showSection('Juice')">Back to Categories</button>
 </section>
 
 <script>
+  // Data storage
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -192,6 +200,7 @@
     'Mojito': {},
     'Sandwich': {}
   };
+
   // Load existing data
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
@@ -269,7 +278,7 @@
     }
   }
 
-  // Load all categories initially
+  // Initial load
   for (let section in dataSections) {
     displayItems(section);
   }
@@ -300,6 +309,35 @@
       }
       saveData();
     }
+  }
+
+  // PWA install prompt
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  function promptInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+      });
+    } else {
+      alert('Install prompt not available');
+    }
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js').then(registration => {
+        console.log('Service Worker registered with scope:', registration.scope);
+      }).catch(error => {
+        console.log('Service Worker registration failed:', error);
+      });
+    });
   }
 </script>
 </body>
