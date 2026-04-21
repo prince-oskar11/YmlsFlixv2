@@ -39,6 +39,7 @@
   }
   #stockBtn { background-color: #2196F3; color: white; }
   #clearBtn { background-color: #f44336; color: white; }
+  #saleBtn { background-color: #ff9800; color: white; } /* Sale button in orange */
 
   /* Navigation styles */
   #nav {
@@ -81,30 +82,16 @@
   }
   .addSection button:hover { background-color: #0b7dda; }
 
-  /* Stock page styles */
-  #stockPage {
-    display: none;
-    max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  /* Stock and Sale container styles */
+  #stockContainer, #saleContainer {
+    display: flex; flex-direction: column; gap: 10px; margin-top: 10px;
   }
-  #stockPage.active { display: block; }
 
-  #stockHeader {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+  /* Stock and Sale item styles */
+  .stockItem, .saleItem {
+    display: flex; align-items: center; justify-content: space-between; padding: 8px; background: #e0e0e0; border-radius: 4px;
   }
-  #stockHeader h2 { margin: 0; }
-  #closeStockBtn {
-    padding: 8px 12px; border: none; border-radius: 4px; background-color: #f44336; color: white; cursor: pointer;
-  }
-  #closeStockBtn:hover { background-color: #d32f2f; }
-
-  /* Stock items list */
-  #stockItems {
-    margin-top: 10px;
-  }
-  .stockItem {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: #e0e0e0; border-radius: 4px;
-  }
-  .stockItem span { flex: 1; }
+  .stockItem span, .saleItem span { flex: 1; }
 </style>
 <script>
   // Initialize data storage for main categories
@@ -113,7 +100,8 @@
     'Milk-Cake': {},
     'Tiramisu': {},
     'Matcha': {},
-    'Mojito': {}
+    'Mojito': {},
+    'Sandwich': {}
   };
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
@@ -121,18 +109,23 @@
 
   // Initialize stock data
   let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
+  // Initialize sales list
+  let salesList = JSON.parse(localStorage.getItem('Sales')) || [];
 
   function saveData() {
     for (let section in dataSections) {
       localStorage.setItem(section, JSON.stringify(dataSections[section]));
     }
     localStorage.setItem('Stock', JSON.stringify(stockItems));
+    localStorage.setItem('Sales', JSON.stringify(salesList));
   }
 
   function showSection(id) {
-    document.querySelectorAll('section, #stockPage').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('section, #stockPage, #salePage').forEach(s => s.classList.remove('active'));
     if (id === 'Stock') {
       document.getElementById('stockPage').classList.add('active');
+    } else if (id === 'Sale') {
+      document.getElementById('salePage').classList.add('active');
     } else {
       document.getElementById(id).classList.add('active');
     }
@@ -173,17 +166,27 @@
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateTopSaler(); saveData(); };
+      plusBtn.onclick = () => { 
+        items[name]++;
+        displaySectionItems(sectionName); 
+        updateTopSaler(); 
+        saveData(); 
+        // Add to sales list
+        salesList.push(name);
+        saveData();
+        if (document.getElementById('salePage').classList.contains('active')) {
+          displaySales();
+        }
+      };
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'deleteBtn';
       deleteBtn.innerText = 'x';
-      // Updated delete handler with page reload
       deleteBtn.onclick = () => {
         if (confirm(`Delete "${name}"?`)) {
           delete dataSections[sectionName][name];
           saveData();
-          location.reload(); // Force page reload to update display
+          location.reload();
         }
       };
 
@@ -229,7 +232,7 @@
     document.getElementById('topSellerText').innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
   }
 
-  // Display stock items with updated numbers
+  // Display stock items
   function displayStock() {
     const container = document.getElementById('stockItems');
     container.innerHTML = '';
@@ -284,12 +287,25 @@
     saveData();
   }
 
+  // Display sales list
+  function displaySales() {
+    const container = document.getElementById('salesItems');
+    container.innerHTML = '';
+    for (const item of salesList) {
+      const div = document.createElement('div');
+      div.className = 'saleItem';
+      div.innerText = item;
+      container.appendChild(div);
+    }
+  }
+
   // When page loads
   window.onload = () => {
     for (let section in dataSections) {
       displaySectionItems(section);
     }
     displayStock();
+    displaySales();
     updateTopSaler();
   };
 </script>
@@ -302,6 +318,7 @@
   <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
     <button id="stockBtn" onclick="showSection('Stock')">Stock</button>
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
+    <button id="saleBtn" onclick="showSection('Sale')">Sale</button> <!-- Sale button -->
   </div>
 </div>
 
@@ -312,7 +329,8 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
-  </div>
+  <span onclick="showSection('Sandwich')">Sandwich</span>
+</div>
 
 <!-- Main sections for categories -->
 <!-- Juice -->
@@ -370,7 +388,22 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
-<!-- Removed Top Seller section here -->
+<!-- Sandwich -->
+<section id="Sandwich">
+  <h2>Add New Sandwich</h2>
+  <div class="addSection">
+    <input type="text" id="sandwichInput" placeholder="Enter Sandwich name" />
+    <button onclick="addItem('Sandwich', 'sandwichInput')">Add Sandwich</button>
+  </div>
+  <h3>Sandwich List</h3>
+  <div id="itemsContainer_Sandwich"></div>
+</section>
+
+<!-- Sale -->
+<section id="Sale">
+  <h2>Sales List</h2>
+  <div id="salesItems"></div>
+</section>
 
 <!-- Stock Page -->
 <div id="stockPage">
@@ -386,8 +419,529 @@
 </div>
 
 <script>
-  // All scripts as before...
-  // No change needed here
+  // All scripts as before, with updates for sales
+  let dataSections = {
+    'Juice': {},
+    'Milk-Cake': {},
+    'Tiramisu': {},
+    'Matcha': {},
+    'Mojito': {},
+    'Sandwich': {}
+  };
+  for (let key in dataSections) {
+    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
+  }
+  let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
+  let salesList = JSON.parse(localStorage.getItem('Sales')) || [];
+
+  function saveData() {
+    for (let section in dataSections) {
+      localStorage.setItem(section, JSON.stringify(dataSections[section]));
+    }
+    localStorage.setItem('Stock', JSON.stringify(stockItems));
+    localStorage.setItem('Sales', JSON.stringify(salesList));
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('section, #stockPage, #salePage').forEach(s => s.classList.remove('active'));
+    if (id === 'Stock') {
+      document.getElementById('stockPage').classList.add('active');
+    } else if (id === 'Sale') {
+      document.getElementById('salePage').classList.add('active');
+    } else {
+      document.getElementById(id).classList.add('active');
+    }
+  }
+
+  function addItem(sectionName, inputId) {
+    const name = document.getElementById(inputId).value.trim();
+    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
+    dataSections[sectionName][name] = 0;
+    document.getElementById(inputId).value = '';
+    displaySectionItems(sectionName);
+    updateTopSaler();
+    saveData();
+  }
+
+  function displaySectionItems(sectionName) {
+    const container = document.getElementById('itemsContainer_' + sectionName);
+    if (!container) return;
+    container.innerHTML = '';
+    const items = dataSections[sectionName];
+    for (const name in items) {
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const n = document.createElement('span');
+      n.className = 'itemName';
+      n.innerText = name;
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateTopSaler(); saveData(); } };
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'counter';
+      countSpan.innerText = items[name];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { 
+        items[name]++;
+        displaySectionItems(sectionName); 
+        updateTopSaler(); 
+        saveData(); 
+        // Add to sales list
+        salesList.push(name);
+        saveData();
+        if (document.getElementById('salePage').classList.contains('active')) {
+          displaySales();
+        }
+      };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.innerText = 'x';
+      deleteBtn.onclick = () => {
+        if (confirm(`Delete "${name}"?`)) {
+          delete dataSections[sectionName][name];
+          saveData();
+          location.reload();
+        }
+      };
+
+      div.appendChild(n);
+      div.appendChild(minusBtn);
+      div.appendChild(countSpan);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      container.appendChild(div);
+    }
+  }
+
+  function resetCounts() {
+    if (confirm('Are you sure you want to reset all counts to zero?')) {
+      for (let section in dataSections) {
+        for (let item in dataSections[section]) {
+          dataSections[section][item] = 0;
+        }
+        displaySectionItems(section);
+      }
+      updateTopSaler();
+      saveData();
+    }
+  }
+
+  function updateTopSaler() {
+    let totalSales = {};
+    for (let section in dataSections) {
+      for (const name in dataSections[section]) {
+        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
+      }
+    }
+    let maxCount = -1;
+    let topItem = '';
+    for (const name in totalSales) {
+      if (totalSales[name] > maxCount) {
+        maxCount = totalSales[name];
+        topItem = name;
+      }
+    }
+    document.getElementById('topSellerText')?.innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
+  }
+
+  function displayStock() {
+    const container = document.getElementById('stockItems');
+    container.innerHTML = '';
+    for (const item in stockItems) {
+      const div = document.createElement('div');
+      div.className = 'stockItem';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.innerText = item;
+
+      const controlsDiv = document.createElement('div');
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (stockItems[item] > 0) { stockItems[item]--; saveData(); displayStock(); } };
+
+      const countSpan = document.createElement('span');
+      countSpan.innerText = stockItems[item];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { stockItems[item]++; saveData(); displayStock(); };
+
+      const xBtn = document.createElement('button');
+      xBtn.innerText = 'x';
+      xBtn.onclick = () => {
+        if (confirm(`Delete stock item "${item}"?`)) {
+          delete stockItems[item];
+          saveData();
+          displayStock();
+        }
+      };
+
+      controlsDiv.appendChild(minusBtn);
+      controlsDiv.appendChild(plusBtn);
+      controlsDiv.appendChild(xBtn);
+
+      div.appendChild(nameSpan);
+      div.appendChild(controlsDiv);
+
+      container.appendChild(div);
+    }
+  }
+
+  function addStockItem() {
+    const input = document.getElementById('stockInput');
+    const name = input.value.trim();
+    if (!name || stockItems[name]) { alert('Enter a valid and new stock item'); return; }
+    stockItems[name] = 0;
+    input.value = '';
+    displayStock();
+    saveData();
+  }
+
+  function displaySales() {
+    const container = document.getElementById('salesItems');
+    if (!container) return;
+    container.innerHTML = '';
+    for (const item of salesList) {
+      const div = document.createElement('div');
+      div.className = 'saleItem';
+      div.innerText = item;
+      container.appendChild(div);
+    }
+  }
+
+  // When page loads
+  window.onload = () => {
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
+    displayStock();
+    displaySales();
+    updateTopSaler();
+  };
+</script>
+</head>
+<body>
+
+<!-- Header with name and buttons -->
+<div id="header">
+  <h1 style="margin:0; color:green;">JUIXY</h1>
+  <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
+    <button id="stockBtn" onclick="showSection('Stock')">Stock</button>
+    <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
+    <button id="saleBtn" onclick="showSection('Sale')">Sale</button>
+  </div>
+</div>
+
+<!-- Navigation menu -->
+<div id="nav">
+  <span onclick="showSection('Juice')">Juice</span>
+  <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
+  <span onclick="showSection('Tiramisu')">Tiramisu</span>
+  <span onclick="showSection('Matcha')">Matcha</span>
+  <span onclick="showSection('Mojito')">Mojito</span>
+  <span onclick="showSection('Sandwich')">Sandwich</span>
+</div>
+
+<!-- Main sections for categories -->
+<!-- Juice -->
+<section id="Juice" class="active">
+  <h2>Add New Juice</h2>
+  <div class="addSection">
+    <input type="text" id="juiceInput" placeholder="Enter juice name" />
+    <button onclick="addItem('Juice', 'juiceInput')">Add Juice</button>
+  </div>
+  <h3>Juice List</h3>
+  <div id="itemsContainer_Juice"></div>
+</section>
+
+<!-- Milk-Cake -->
+<section id="Milk-Cake">
+  <h2>Add New Milk-Cake</h2>
+  <div class="addSection">
+    <input type="text" id="milkCakeInput" placeholder="Enter Milk-Cake name" />
+    <button onclick="addItem('Milk-Cake', 'milkCakeInput')">Add Milk-Cake</button>
+  </div>
+  <h3>Milk-Cake List</h3>
+  <div id="itemsContainer_Milk-Cake"></div>
+</section>
+
+<!-- Tiramisu -->
+<section id="Tiramisu">
+  <h2>Add New Tiramisu</h2>
+  <div class="addSection">
+    <input type="text" id="tiramisuInput" placeholder="Enter Tiramisu name" />
+    <button onclick="addItem('Tiramisu', 'tiramisuInput')">Add Tiramisu</button>
+  </div>
+  <h3>Tiramisu List</h3>
+  <div id="itemsContainer_Tiramisu"></div>
+</section>
+
+<!-- Matcha -->
+<section id="Matcha">
+  <h2>Add New Matcha</h2>
+  <div class="addSection">
+    <input type="text" id="matchaInput" placeholder="Enter Matcha name" />
+    <button onclick="addItem('Matcha', 'matchaInput')">Add Matcha</button>
+  </div>
+  <h3>Matcha List</h3>
+  <div id="itemsContainer_Matcha"></div>
+</section>
+
+<!-- Mojito -->
+<section id="Mojito">
+  <h2>Add New Mojito</h2>
+  <div class="addSection">
+    <input type="text" id="mojitoInput" placeholder="Enter Mojito name" />
+    <button onclick="addItem('Mojito', 'mojitoInput')">Add Mojito</button>
+  </div>
+  <h3>Mojito List</h3>
+  <div id="itemsContainer_Mojito"></div>
+</section>
+
+<!-- Sandwich -->
+<section id="Sandwich">
+  <h2>Add New Sandwich</h2>
+  <div class="addSection">
+    <input type="text" id="sandwichInput" placeholder="Enter Sandwich name" />
+    <button onclick="addItem('Sandwich', 'sandwichInput')">Add Sandwich</button>
+  </div>
+  <h3>Sandwich List</h3>
+  <div id="itemsContainer_Sandwich"></div>
+</section>
+
+<!-- Sale -->
+<section id="Sale">
+  <h2>Sales List</h2>
+  <div id="salesItems"></div>
+</section>
+
+<!-- Stock Page -->
+<div id="stockPage">
+  <div id="stockHeader">
+    <h2>Stock Management</h2>
+    <button id="closeStockBtn" onclick="showSection('')">Close</button>
+  </div>
+  <div>
+    <input type="text" id="stockInput" placeholder="New stock item" />
+    <button onclick="addStockItem()">Add Stock Item</button>
+  </div>
+  <div id="stockItems"></div>
+</div>
+
+<script>
+  // All scripts as before, with updates for sales
+  let dataSections = {
+    'Juice': {},
+    'Milk-Cake': {},
+    'Tiramisu': {},
+    'Matcha': {},
+    'Mojito': {},
+    'Sandwich': {}
+  };
+  for (let key in dataSections) {
+    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
+  }
+  let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
+  let salesList = JSON.parse(localStorage.getItem('Sales')) || [];
+
+  function saveData() {
+    for (let section in dataSections) {
+      localStorage.setItem(section, JSON.stringify(dataSections[section]));
+    }
+    localStorage.setItem('Stock', JSON.stringify(stockItems));
+    localStorage.setItem('Sales', JSON.stringify(salesList));
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('section, #stockPage, #salePage').forEach(s => s.classList.remove('active'));
+    if (id === 'Stock') {
+      document.getElementById('stockPage').classList.add('active');
+    } else if (id === 'Sale') {
+      document.getElementById('salePage').classList.add('active');
+    } else {
+      document.getElementById(id).classList.add('active');
+    }
+  }
+
+  function addItem(sectionName, inputId) {
+    const name = document.getElementById(inputId).value.trim();
+    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
+    dataSections[sectionName][name] = 0;
+    document.getElementById(inputId).value = '';
+    displaySectionItems(sectionName);
+    updateTopSaler();
+    saveData();
+  }
+
+  function displaySectionItems(sectionName) {
+    const container = document.getElementById('itemsContainer_' + sectionName);
+    if (!container) return;
+    container.innerHTML = '';
+    const items = dataSections[sectionName];
+    for (const name in items) {
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const n = document.createElement('span');
+      n.className = 'itemName';
+      n.innerText = name;
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateTopSaler(); saveData(); } };
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'counter';
+      countSpan.innerText = items[name];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { 
+        items[name]++;
+        displaySectionItems(sectionName); 
+        updateTopSaler(); 
+        saveData(); 
+        // Add to sales list
+        salesList.push(name);
+        saveData();
+        if (document.getElementById('salePage').classList.contains('active')) {
+          displaySales();
+        }
+      };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.innerText = 'x';
+      deleteBtn.onclick = () => {
+        if (confirm(`Delete "${name}"?`)) {
+          delete dataSections[sectionName][name];
+          saveData();
+          location.reload();
+        }
+      };
+
+      div.appendChild(n);
+      div.appendChild(minusBtn);
+      div.appendChild(countSpan);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      container.appendChild(div);
+    }
+  }
+
+  function resetCounts() {
+    if (confirm('Are you sure you want to reset all counts to zero?')) {
+      for (let section in dataSections) {
+        for (let item in dataSections[section]) {
+          dataSections[section][item] = 0;
+        }
+        displaySectionItems(section);
+      }
+      updateTopSaler();
+      saveData();
+    }
+  }
+
+  function updateTopSaler() {
+    let totalSales = {};
+    for (let section in dataSections) {
+      for (const name in dataSections[section]) {
+        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
+      }
+    }
+    let maxCount = -1;
+    let topItem = '';
+    for (const name in totalSales) {
+      if (totalSales[name] > maxCount) {
+        maxCount = totalSales[name];
+        topItem = name;
+      }
+    }
+    document.getElementById('topSellerText')?.innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
+  }
+
+  function displayStock() {
+    const container = document.getElementById('stockItems');
+    container.innerHTML = '';
+    for (const item in stockItems) {
+      const div = document.createElement('div');
+      div.className = 'stockItem';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.innerText = item;
+
+      const controlsDiv = document.createElement('div');
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (stockItems[item] > 0) { stockItems[item]--; saveData(); displayStock(); } };
+
+      const countSpan = document.createElement('span');
+      countSpan.innerText = stockItems[item];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { stockItems[item]++; saveData(); displayStock(); };
+
+      const xBtn = document.createElement('button');
+      xBtn.innerText = 'x';
+      xBtn.onclick = () => {
+        if (confirm(`Delete stock item "${item}"?`)) {
+          delete stockItems[item];
+          saveData();
+          displayStock();
+        }
+      };
+
+      controlsDiv.appendChild(minusBtn);
+      controlsDiv.appendChild(plusBtn);
+      controlsDiv.appendChild(xBtn);
+
+      div.appendChild(nameSpan);
+      div.appendChild(controlsDiv);
+
+      container.appendChild(div);
+    }
+  }
+
+  function addStockItem() {
+    const input = document.getElementById('stockInput');
+    const name = input.value.trim();
+    if (!name || stockItems[name]) { alert('Enter a valid and new stock item'); return; }
+    stockItems[name] = 0;
+    input.value = '';
+    displayStock();
+    saveData();
+  }
+
+  function displaySales() {
+    const container = document.getElementById('salesItems');
+    if (!container) return;
+    container.innerHTML = '';
+    for (const item of salesList) {
+      const div = document.createElement('div');
+      div.className = 'saleItem';
+      div.innerText = item;
+      container.appendChild(div);
+    }
+  }
+
+  // When page loads
+  window.onload = () => {
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
+    displayStock();
+    displaySales();
+    updateTopSaler();
+  };
 </script>
 </body>
 </html>
