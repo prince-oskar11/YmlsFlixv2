@@ -184,7 +184,6 @@
 </section>
 
 <script>
-  // Data for categories
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -198,21 +197,18 @@
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
 
-  // Save all data
   function saveData() {
     for (let sec in dataSections) {
       localStorage.setItem(sec, JSON.stringify(dataSections[sec]));
     }
   }
 
-  // Show specific section
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('#TopSaler').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  // Add new item
   function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[section][name]) {
@@ -225,7 +221,6 @@
     saveData();
   }
 
-  // Display items in a section
   function displayItems(section) {
     const container = document.getElementById('itemsContainer_' + section);
     if (!container) return;
@@ -243,14 +238,14 @@
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (dataSections[section][name] > 0) { dataSections[section][name]--; displayItems(section); } };
+      minusBtn.onclick = () => { if (dataSections[section][name] > 0) { dataSections[section][name]--; displayItems(section); saveData(); } };
 
       const countSpan = document.createElement('span');
       countSpan.innerText = dataSections[section][name];
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { dataSections[section][name]++; displayItems(section); };
+      plusBtn.onclick = () => { dataSections[section][name]++; displayItems(section); saveData(); };
 
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = 'X';
@@ -279,7 +274,6 @@
     displayItems(section);
   }
 
-  // Show Top Seller
   function showTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -296,7 +290,6 @@
     showSection('TopSaler');
   }
 
-  // Reset counts
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
       for (let section in dataSections) {
