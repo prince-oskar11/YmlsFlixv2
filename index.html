@@ -11,7 +11,7 @@
   }
   /* Header styles */
   #header {
-    background-color: #f5deb3; /* beige background for JUIXY title background */
+    background-color: #f5deb3;
     padding: 20px;
     text-align: center;
     position: relative;
@@ -19,10 +19,10 @@
   #header h1 {
     margin: 0;
     font-size: 36px;
-    color: green; /* JUIXY in green */
+    color: green; /* in green */
   }
-  /* Install App button positioned at top-left of header */
-  #installButton {
+  /* Install App button at top-left */
+  #installBtn {
     position: absolute;
     top: 10px;
     left: 20px;
@@ -34,9 +34,8 @@
     font-weight: bold;
     cursor: pointer;
   }
-  #installButton:hover {
-    background-color: #45a049;
-  }
+  #installBtn:hover { background-color: #45a049; }
+
   /* Top buttons container (right side) */
   #topButtons {
     position: absolute;
@@ -52,6 +51,7 @@
     font-weight: bold;
   }
   #clearBtn { background-color: #f44336; color: white; }
+
   /* Navigation styles */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
@@ -60,13 +60,14 @@
     cursor: pointer; font-weight: bold; color: green; font-size: 18px; padding: 8px 12px; border-radius: 4px; transition: background 0.3s;
   }
   #nav span:hover { background-color: #c8e6c9; }
+
   /* Main content style */
   section {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   section.active { display: block; }
-  /* Section headers in brown */
+  /* Sections headers in brown */
   h2 {
     color: brown;
     margin-top: 0;
@@ -112,16 +113,17 @@
 </style>
 </head>
 <body>
-<!-- Header with "JUIXY" and "Install App" button at top left, and other buttons at top right -->
+
+<!-- Header -->
 <div id="header">
   <h1 style="margin:0;">JUIXY</h1>
-  <button id="installButton" onclick="alert('Install app as a shortcut or PWA')">Install App</button>
+  <button id="installBtn" onclick="showSection('stockPage')">Install App</button>
   <div id="topButtons" style="position:absolute; top:20px; right:20px;">
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
 </div>
 
-<!-- Navigation menu -->
+<!-- Navigation -->
 <div id="nav">
   <span onclick="showSection('Juice')">Juice</span>
   <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
@@ -132,7 +134,7 @@
   <span style="cursor:pointer; font-weight:bold; color:green;" onclick="showSection('TopSaler')">Top Seller</span>
 </div>
 
-<!-- Main categories -->
+<!-- Main pages for each category -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
   <div class="addSection">
@@ -193,6 +195,17 @@
   <div id="itemsContainer_Sandwich"></div>
 </section>
 
+<!-- Stock management page -->
+<section id="stockPage">
+  <h2>Stock Management</h2>
+  <div id="stockItems"></div>
+  <div class="addSection" style="margin-top:20px;">
+    <input type="text" id="newStockItem" placeholder="New stock item" />
+    <button onclick="addStock()">Add</button>
+  </div>
+  <button onclick="showSection('Juice')">Back to Categories</button>
+</section>
+
 <!-- Top Seller Page -->
 <section id="TopSaler">
   <h2>Top Seller</h2>
@@ -201,7 +214,7 @@
 </section>
 
 <script>
-  // Data initialization
+  // Data storage
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -210,7 +223,7 @@
     'Mojito': {},
     'Sandwich': {}
   };
-  let storage = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : {};
+  let stockData = JSON.parse(localStorage.getItem('stockData')) || {};
 
   // Load data
   for (let key in dataSections) {
@@ -222,16 +235,18 @@
     for (let sec in dataSections) {
       localStorage.setItem(sec, JSON.stringify(dataSections[sec]));
     }
+    localStorage.setItem('stockData', JSON.stringify(stockData));
   }
 
-  // Show sections
+  // Show pages
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('#stockPage, #TopSaler').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('#TopSaler').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('#stockPage').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  // Add item
+  // Add Item
   function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[section][name]) {
@@ -257,7 +272,7 @@
       n.className = 'itemName';
       n.innerText = name;
 
-      // Buttons for item management
+      // Buttons: minus, plus, delete
       const btnDiv = document.createElement('div');
       btnDiv.className = 'manageButtons';
 
@@ -272,16 +287,14 @@
       plusBtn.innerText = '+';
       plusBtn.onclick = () => { dataSections[section][name]++; displayItems(section); };
 
-      // delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = 'X';
       deleteBtn.className = 'deleteBtn';
       deleteBtn.onclick = () => {
         if (confirm('Delete "' + name + '"?')) {
           delete dataSections[section][name];
-          delete localStorage['data'][name]; // Not needed, just delete from data
-          displayItems(section);
           saveData();
+          displayItems(section);
         }
       };
 
@@ -318,7 +331,7 @@
     showSection('TopSaler');
   }
 
-  // Clear counts
+  // Reset counts
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
       for (let section in dataSections) {
@@ -330,6 +343,63 @@
       saveData();
     }
   }
+
+  // Add new stock item
+  function addStock() {
+    const name = document.getElementById('newStockItem').value.trim();
+    if (!name || stockData[name]) {
+      alert('Enter a new stock item name');
+      return;
+    }
+    stockData[name] = 0;
+    document.getElementById('newStockItem').value = '';
+    displayStock();
+    saveData();
+  }
+
+  // Display stock items
+  function displayStock() {
+    const container = document.getElementById('stockItems');
+    if (!container) return;
+    container.innerHTML = '';
+    for (const name in stockData) {
+      const div = document.createElement('div');
+      div.className = 'stockItem';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.innerText = name;
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (stockData[name] > 0) { stockData[name]--; saveData(); displayStock(); } };
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { stockData[name]++; saveData(); displayStock(); };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerText = 'X';
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.onclick = () => {
+        if (confirm('Delete stock item "' + name + '"?')) {
+          delete stockData[name];
+          saveData();
+          displayStock();
+        }
+      };
+
+      div.appendChild(nameSpan);
+      div.appendChild(minusBtn);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      container.appendChild(div);
+    }
+  }
+
+  // Initialize display
+  window.onload = () => {
+    displayStock();
+  };
 </script>
 </body>
 </html>
