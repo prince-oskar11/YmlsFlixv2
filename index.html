@@ -4,7 +4,12 @@
 <meta charset="UTF-8" />
 <title>JUIXY - Juice & Dessert App</title>
 <style>
-  body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f0f0; }
+  body {
+    font-family: Arial, sans-serif;
+    margin:0; padding:0;
+    background-color: #f5deb3; /* beige background */
+  }
+
   /* Header styles */
   #header {
     background-color: #4CAF50; /* green background */
@@ -15,8 +20,9 @@
   #header h1 {
     margin: 0;
     font-size: 36px;
-    color: white;
+    color: green; /* name in green */
   }
+
   /* Top buttons container */
   #topButtons {
     position: absolute;
@@ -46,9 +52,15 @@
   /* Main content style */
   section {
     display: none;
-    max-width: 800px; margin:20px auto; background: white; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   section.active { display: block; }
+
+  /* Section header titles in brown */
+  h2 {
+    color: brown;
+    margin-top: 0;
+  }
 
   /* Items list styles */
   .item { display: flex; align-items: center; margin-bottom: 10px; }
@@ -73,7 +85,11 @@
   #summary {
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
-  #summary h2 { margin-top: 0; }
+  #summary h2 { margin-top: 0; cursor:pointer; }
+  /* Top salers list */
+  #topSaler {
+    margin-top: 20px;
+  }
 </style>
 <script>
   // Initialize data storage
@@ -106,6 +122,7 @@
     dataSections[sectionName][name] = 0;
     document.getElementById(inputId).value = '';
     displaySectionItems(sectionName);
+    updateSummary();
     saveData();
   }
 
@@ -125,7 +142,7 @@
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); saveData(); } };
+      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateSummary(); saveData(); } };
 
       const countSpan = document.createElement('span');
       countSpan.className = 'counter';
@@ -133,7 +150,7 @@
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); saveData(); };
+      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateSummary(); saveData(); };
 
       div.appendChild(n);
       div.appendChild(minusBtn);
@@ -157,7 +174,7 @@
     }
   }
 
-  // Update summary
+  // Update summary view
   function updateSummary() {
     const summaryDiv = document.getElementById('summary');
     summaryDiv.innerHTML = '';
@@ -170,7 +187,27 @@
     }
   }
 
-  // On load
+  // Show the "Top Seller" page
+  function showTopSaler() {
+    let totalSales = {};
+    for (let section in dataSections) {
+      for (const name in dataSections[section]) {
+        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
+      }
+    }
+    // Find top seller
+    let maxCount = -1;
+    let topItem = '';
+    for (const name in totalSales) {
+      if (totalSales[name] > maxCount) {
+        maxCount = totalSales[name];
+        topItem = name;
+      }
+    }
+    alert(`Top Seller: ${topItem} with ${maxCount} sales`);
+  }
+
+  // When page loads
   window.onload = () => {
     for (let section in dataSections) {
       displaySectionItems(section);
@@ -181,11 +218,10 @@
 </head>
 <body>
 
-<!-- Top Header -->
+<!-- Header with name and buttons -->
 <div id="header">
-  <h1 style="margin:0; color:white;">JUIXY</h1>
-  <!-- Top buttons -->
-  <div id="topButtons">
+  <h1 style="margin:0; color:green;">JUIXY</h1>
+  <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
     <button id="stockBtn" onclick="alert('Stock management not implemented')">Stock</button>
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
@@ -198,6 +234,7 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
+  <span onclick="showTopSaler()">Sales Summary</span>
 </div>
 
 <!-- Sections for each category -->
@@ -256,17 +293,10 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
-<!-- Sales Summary -->
+<!-- Sales summary page (hidden, activated by menu) -->
+<!-- Instead, we use alert for top seller; if you want a dedicated page, can be added -->
 <h2>Sales Summary</h2>
 <div id="summary"></div>
-
-<script>
-  // Show section
-  function showSection(id) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-</script>
 
 </body>
 </html>
