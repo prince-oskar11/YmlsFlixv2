@@ -74,10 +74,19 @@
   /* Items list styles */
   .item { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
   .itemName { flex: 1; font-size: 16px; }
-  .stockLevel { margin-left: 10px; font-weight: bold; color: #555; }
-  .counter { width: 50px; text-align: center; font-weight: bold; }
-  button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
-  button:hover { background-color: #45a049; }
+  /* Buttons for item management */
+  .manageButtons button {
+    margin: 0 5px;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor:pointer;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+  }
+  .manageButtons button:hover { background-color: #45a049; }
+
   /* Delete button style */
   .deleteBtn {
     background-color: #f44336; /* red */
@@ -103,11 +112,11 @@
 </style>
 </head>
 <body>
-<!-- Header with "JUIXY" and "Install App" button at top-left, and other buttons at top-right -->
+<!-- Header with "JUIXY" and "Install App" button at top left, and other buttons at top right -->
 <div id="header">
   <h1 style="margin:0;">JUIXY</h1>
   <button id="installButton" onclick="alert('Install app as a shortcut or PWA')">Install App</button>
-  <div id="topButtons" style="position:absolute; top:20px; right:20px; display:flex; gap:10px;">
+  <div id="topButtons" style="position:absolute; top:20px; right:20px;">
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
 </div>
@@ -201,19 +210,18 @@
     'Mojito': {},
     'Sandwich': {}
   };
-  let stockData = JSON.parse(localStorage.getItem('Stock')) || {};
+  let storage = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : {};
 
-  // Load existing data
+  // Load data
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
 
-  // Save function
+  // Save data
   function saveData() {
     for (let sec in dataSections) {
       localStorage.setItem(sec, JSON.stringify(dataSections[sec]));
     }
-    localStorage.setItem('Stock', JSON.stringify(stockData));
   }
 
   // Show sections
@@ -223,11 +231,11 @@
     document.getElementById(id).classList.add('active');
   }
 
-  // Add new item
+  // Add item
   function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[section][name]) {
-      alert('Enter a valid and new item name');
+      alert('Invalid or duplicate name');
       return;
     }
     dataSections[section][name] = 0;
@@ -249,17 +257,15 @@
       n.className = 'itemName';
       n.innerText = name;
 
-      const stockCount = stockData[name] || 0;
-      const stockSpan = document.createElement('span');
-      stockSpan.className = 'stockLevel';
-      stockSpan.innerText = `Stock: ${stockCount}`;
+      // Buttons for item management
+      const btnDiv = document.createElement('div');
+      btnDiv.className = 'manageButtons';
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
       minusBtn.onclick = () => { if (dataSections[section][name] > 0) { dataSections[section][name]--; displayItems(section); } };
 
       const countSpan = document.createElement('span');
-      countSpan.className = 'counter';
       countSpan.innerText = dataSections[section][name];
 
       const plusBtn = document.createElement('button');
@@ -271,20 +277,21 @@
       deleteBtn.innerText = 'X';
       deleteBtn.className = 'deleteBtn';
       deleteBtn.onclick = () => {
-        if (confirm('Are you sure you want to delete "' + name + '"?')) {
+        if (confirm('Delete "' + name + '"?')) {
           delete dataSections[section][name];
-          delete stockData[name];
+          delete localStorage['data'][name]; // Not needed, just delete from data
           displayItems(section);
           saveData();
         }
       };
 
+      btnDiv.appendChild(minusBtn);
+      btnDiv.appendChild(countSpan);
+      btnDiv.appendChild(plusBtn);
+      btnDiv.appendChild(deleteBtn);
+
       div.appendChild(n);
-      div.appendChild(stockSpan);
-      div.appendChild(minusBtn);
-      div.appendChild(countSpan);
-      div.appendChild(plusBtn);
-      div.appendChild(deleteBtn);
+      div.appendChild(btnDiv);
       container.appendChild(div);
     }
   }
@@ -294,7 +301,7 @@
     displayItems(section);
   }
 
-  // Top Seller display
+  // Show Top Seller
   function showTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
