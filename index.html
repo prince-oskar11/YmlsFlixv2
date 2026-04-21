@@ -105,6 +105,12 @@
     display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: #e0e0e0; border-radius: 4px;
   }
   .stockItem span { flex: 1; }
+
+  /* Delete button style for items */
+  .deleteBtn {
+    background: #f44336; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor:pointer;
+  }
+  .deleteBtn:hover { background: #d32f2f; }
 </style>
 <script>
   // Initialize data storage for main categories
@@ -149,7 +155,7 @@
     saveData();
   }
 
-  // Display items in main sections
+  // Display items in main sections with delete button
   function displaySectionItems(sectionName) {
     const container = document.getElementById('itemsContainer_' + sectionName);
     if (!container) return;
@@ -175,10 +181,22 @@
       plusBtn.innerText = '+';
       plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateSummary(); saveData(); };
 
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.innerText = 'x';
+      deleteBtn.onclick = () => {
+        if (confirm(`Delete "${name}"?`)) {
+          delete dataSections[sectionName][name];
+          displaySectionItems(sectionName);
+          saveData();
+        }
+      };
+
       div.appendChild(n);
       div.appendChild(minusBtn);
       div.appendChild(countSpan);
       div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
       container.appendChild(div);
     }
   }
@@ -197,9 +215,9 @@
     }
   }
 
-  // Update summary view (not used now)
+  // Update summary view (no longer used)
   function updateSummary() {
-    // No implementation
+    // Not needed now
   }
 
   // Show Top Seller
@@ -221,16 +239,7 @@
     alert(`Top Seller: ${topItem} with ${maxCount} sales`);
   }
 
-  // Load data on page load
-  window.onload = () => {
-    for (let section in dataSections) {
-      displaySectionItems(section);
-    }
-    updateSummary();
-    displayStock();
-  };
-
-  // Stock page functions
+  // Display stock items
   function displayStock() {
     const container = document.getElementById('stockItems');
     container.innerHTML = '';
@@ -253,7 +262,13 @@
 
       const xBtn = document.createElement('button');
       xBtn.innerText = 'x';
-      xBtn.onclick = () => { delete stockItems[item]; saveData(); displayStock(); };
+      xBtn.onclick = () => {
+        if (confirm(`Delete stock item "${item}"?`)) {
+          delete stockItems[item];
+          saveData();
+          displayStock();
+        }
+      };
 
       controlsDiv.appendChild(minusBtn);
       controlsDiv.appendChild(plusBtn);
@@ -295,6 +310,7 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
+  <span onclick="showSection('TopSeller')">Top Seller</span>
 </div>
 
 <!-- Main sections for categories -->
@@ -353,6 +369,15 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
+<!-- Top Seller -->
+<div id="TopSeller" style="display:flex; justify-content:space-around; margin-top:20px;">
+  <div style="background:#f0f0f0; padding:10px; border-radius:8px; width:200px;">
+    <h3>Top Seller</h3>
+    <p id="topSellerText">Calculating...</p>
+    <button onclick="showTopSaler()">Show Top Seller</button>
+  </div>
+</div>
+
 <!-- Stock Page -->
 <div id="stockPage">
   <div id="stockHeader">
@@ -365,6 +390,40 @@
   </div>
   <div id="stockItems"></div>
 </div>
+
+<script>
+  // Functions for main sections and stock already included above
+  
+  // When page loads, update top seller display
+  window.onload = () => {
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
+    displayStock();
+    updateTopSellerDisplay();
+  };
+
+  // Update Top Seller display
+  function updateTopSellerDisplay() {
+    let totalSales = {};
+    for (let section in dataSections) {
+      for (const name in dataSections[section]) {
+        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
+      }
+    }
+    let maxCount = -1;
+    let topItem = '';
+    for (const name in totalSales) {
+      if (totalSales[name] > maxCount) {
+        maxCount = totalSales[name];
+        topItem = name;
+      }
+    }
+    document.getElementById('topSellerText').innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
+  }
+
+  // Disable refresh to reset top seller (not needed as data is stored in localstorage)
+</script>
 
 </body>
 </html>
