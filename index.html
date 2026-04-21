@@ -68,6 +68,10 @@
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
   button:hover { background-color: #45a049; }
+  .deleteBtn {
+    margin-left: 10px; padding: 2px 6px; border: none; border-radius: 50%; background-color: #f44336; color: white; font-weight: bold; cursor:pointer;
+  }
+  .deleteBtn:hover { background-color: #d32f2f; }
 
   /* Add item input styles */
   .addSection {
@@ -83,18 +87,18 @@
 
   /* Container for Mojito and Top Sellers side by side */
   #mojitoAndTopSellers {
-    display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+    display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin: 20px auto; max-width: 800px;
+  }
+  /* Style for Mojito section */
+  #Mojito {
+    flex: 1; min-width:250px;
   }
   /* Style for Top Sellers section */
   #topSellersSection {
-    flex: 1; min-width: 250px;
+    flex: 1; min-width:250px; padding:10px; background:#e0e0e0; border-radius:8px; min-height: 150px;
   }
   #topSellersSection h2 {
     margin-top: 0;
-  }
-  /* Style for Mojito section to take less space if needed */
-  #Mojito {
-    flex: 1; min-width: 250px;
   }
 </style>
 <script>
@@ -121,7 +125,7 @@
     document.getElementById(id).classList.add('active');
   }
 
-  // Add new item to section
+  // Add new item
   function addItem(sectionName, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
@@ -132,7 +136,7 @@
     saveData();
   }
 
-  // Display items in section
+  // Display items
   function displaySectionItems(sectionName) {
     const container = document.getElementById('itemsContainer_' + sectionName);
     if (!container) return;
@@ -158,10 +162,24 @@
       plusBtn.innerText = '+';
       plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); if (sectionName === 'Mojito') updateTopSellers(); saveData(); };
 
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.innerText = 'X';
+      deleteBtn.title = 'Delete Item';
+      deleteBtn.onclick = () => {
+        if (confirm(`Are you sure you want to delete "${name}"?`)) {
+          delete dataSections[sectionName][name];
+          displaySectionItems(sectionName);
+          if (sectionName === 'Mojito') updateTopSellers();
+          saveData();
+        }
+      };
+
       div.appendChild(n);
       div.appendChild(minusBtn);
       div.appendChild(countSpan);
       div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
       container.appendChild(div);
     }
   }
@@ -180,7 +198,7 @@
     }
   }
 
-  // Function to update and show top sellers
+  // Update Top Seller info
   function updateTopSellers() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -188,7 +206,6 @@
         totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
       }
     }
-    // Find top seller
     let maxCount = -1;
     let topItem = '';
     for (const name in totalSales) {
@@ -203,7 +220,6 @@
     }
   }
 
-  // When page loads
   window.onload = () => {
     for (let section in dataSections) {
       displaySectionItems(section);
@@ -214,7 +230,7 @@
 </head>
 <body>
 
-<!-- Header with name and buttons -->
+<!-- Header -->
 <div id="header">
   <h1 style="margin:0; color:green;">JUIXY</h1>
   <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
@@ -223,7 +239,7 @@
   </div>
 </div>
 
-<!-- Navigation menu -->
+<!-- Navigation -->
 <div id="nav">
   <span onclick="showSection('Juice')">Juice</span>
   <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
@@ -232,7 +248,7 @@
   <span onclick="showSection('Mojito')">Mojito</span>
 </div>
 
-<!-- Sections for each category -->
+<!-- Sections -->
 <!-- Juice -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
@@ -277,8 +293,8 @@
   <div id="itemsContainer_Matcha"></div>
 </section>
 
-<!-- Mojito and Top Sellers side by side -->
-<div id="mojitoAndTopSellers" style="margin:20px auto; max-width: 800px;">
+<!-- Mojito and Top Seller side by side -->
+<div id="mojitoAndTopSellers">
   <!-- Mojito Section -->
   <section id="Mojito" style="flex:1; min-width:250px;">
     <h2>Add New Mojito</h2>
@@ -289,7 +305,7 @@
     <h3>Mojito List</h3>
     <div id="itemsContainer_Mojito"></div>
   </section>
-  <!-- Top Sellers Section -->
+  <!-- Top Seller -->
   <section id="topSellersSection" style="flex:1; min-width:250px; padding:10px; background:#e0e0e0; border-radius:8px;">
     <h2>Top Seller</h2>
     <div id="topSellersList" style="font-size:16px; font-weight:bold;">Loading...</div>
