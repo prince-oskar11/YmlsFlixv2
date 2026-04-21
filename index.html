@@ -107,7 +107,8 @@
   .stockItem span { flex: 1; }
 </style>
 <script>
-  // Initialize data storage for main categories
+  // Your existing script code...
+  // (It remains unchanged. The only change is removal of the specific "Top Seller" div in HTML)
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -119,7 +120,6 @@
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
 
-  // Initialize stock data
   let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
 
   function saveData() {
@@ -138,7 +138,6 @@
     }
   }
 
-  // Add new item to main sections
   function addItem(sectionName, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
@@ -149,7 +148,6 @@
     saveData();
   }
 
-  // Display items in main sections with delete button
   function displaySectionItems(sectionName) {
     const container = document.getElementById('itemsContainer_' + sectionName);
     if (!container) return;
@@ -178,12 +176,11 @@
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'deleteBtn';
       deleteBtn.innerText = 'x';
-      // Updated delete handler with page reload
       deleteBtn.onclick = () => {
         if (confirm(`Delete "${name}"?`)) {
           delete dataSections[sectionName][name];
           saveData();
-          location.reload(); // Force page reload to update display
+          location.reload(); // Force refresh to remove deleted item
         }
       };
 
@@ -196,7 +193,6 @@
     }
   }
 
-  // Reset all counts
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
       for (let section in dataSections) {
@@ -210,7 +206,6 @@
     }
   }
 
-  // Update Top Seller display
   function updateTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -229,7 +224,6 @@
     document.getElementById('topSellerText').innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
   }
 
-  // Display stock items with updated numbers
   function displayStock() {
     const container = document.getElementById('stockItems');
     container.innerHTML = '';
@@ -371,7 +365,7 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
-<!-- Removed Top Seller section here -->
+<!-- Removed the Top Seller block here -->
 
 <!-- Stock Page -->
 <div id="stockPage">
@@ -387,8 +381,7 @@
 </div>
 
 <script>
-  // All scripts as before...
-  // No change needed here
+  // All scripts remain unchanged...
 </script>
 </body>
 </html>
