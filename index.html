@@ -105,12 +105,6 @@
     display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: #e0e0e0; border-radius: 4px;
   }
   .stockItem span { flex: 1; }
-
-  /* Delete button style for items */
-  .deleteBtn {
-    background: #f44336; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor:pointer;
-  }
-  .deleteBtn:hover { background: #d32f2f; }
 </style>
 <script>
   // Initialize data storage for main categories
@@ -202,7 +196,7 @@
     }
   }
 
-// Reset all counts
+  // Reset all counts
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
       for (let section in dataSections) {
@@ -235,8 +229,7 @@
     document.getElementById('topSellerText').innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
   }
 
-
-  // Display stock items
+  // Display stock items with updated numbers
   function displayStock() {
     const container = document.getElementById('stockItems');
     container.innerHTML = '';
@@ -252,6 +245,9 @@
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
       minusBtn.onclick = () => { if (stockItems[item] > 0) { stockItems[item]--; saveData(); displayStock(); } };
+
+      const countSpan = document.createElement('span');
+      countSpan.innerText = stockItems[item];
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
@@ -294,7 +290,7 @@
       displaySectionItems(section);
     }
     displayStock();
-    updateTopSalerDisplay();
+    updateTopSaler();
   };
 </script>
 </head>
@@ -316,7 +312,7 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
-  <span onclick="showSection('TopSeller')">Top Seller</span>
+  <span onclick="showTopSaler()">Top Seller</span>
 </div>
 
 <!-- Main sections for categories -->
@@ -399,7 +395,7 @@
 
 <script>
   // All scripts are included above, managing display, data, and interactions
-  // The key fix: only the top seller display next to Mojito remains
+  // The key fix: stock numbers now show and update correctly when clicking -/+ buttons
 </script>
 </body>
 </html>
