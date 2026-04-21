@@ -2,70 +2,159 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>JUIXY - Juice & Dessert</title>
+<title>JUIXY - Juice & Dessert App</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; position: relative; }
-  nav { margin-bottom: 20px; }
-  nav span { margin-right: 20px; cursor: pointer; font-weight: bold; color: green; }
-  section { display: none; }
+  body {
+    font-family: Arial, sans-serif;
+    margin:0; padding:0;
+    background-color: #f5deb3; /* beige background */
+  }
+
+  /* Header styles */
+  #header {
+    background-color: #4CAF50; /* green background */
+    padding: 20px;
+    text-align: center;
+    position: relative;
+  }
+  #header h1 {
+    margin: 0;
+    font-size: 36px;
+    color: green; /* name in green */
+  }
+
+  /* Top buttons container */
+  #topButtons {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    display: flex; justify-content: space-between; padding: 0 20px;
+  }
+  #topButtons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #stockBtn { background-color: #2196F3; color: white; }
+  #clearBtn { background-color: #f44336; color: white; }
+
+  /* Navigation styles */
+  #nav {
+    display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
+  }
+  #nav span {
+    cursor: pointer; font-weight: bold; color: green; font-size: 18px; padding: 8px 12px; border-radius: 4px; transition: background 0.3s;
+  }
+  #nav span:hover { background-color: #c8e6c9; }
+
+  /* Main content style */
+  section {
+    display: none;
+    max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  }
   section.active { display: block; }
+
+  /* Section header titles in brown */
+  h2 {
+    color: brown;
+    margin-top: 0;
+  }
+
+  /* Items list styles */
   .item { display: flex; align-items: center; margin-bottom: 10px; }
-  .itemName { width: 150px; }
+  .itemName { flex: 1; font-size: 16px; }
   .counter { width: 50px; text-align: center; font-weight: bold; }
-  button { margin: 0 5px; }
-  #clearBtn {
-    position: absolute; top: 20px; right: 20px;
-    padding: 8px 12px; background-color: red; color: white; border: none; border-radius: 4px; cursor: pointer;
+  button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
+  button:hover { background-color: #45a049; }
+
+  /* Add item input styles */
+  .addSection {
+    margin-bottom: 15px;
   }
-  #stockSection {
-    margin-top: 20px;
-    border: 1px solid #ccc; padding: 10px; width: 300px;
-    position: absolute; top: 20px; left: 20px;
+  .addSection input {
+    padding: 8px; width: 200px; margin-right: 10px; border: 1px solid #ccc; border-radius:4px;
   }
-  #stockSection h3 { margin-top: 0; }
-  #stockInputs { margin-top: 10px; }
+  .addSection button {
+    padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius:4px; cursor:pointer;
+  }
+  .addSection button:hover { background-color: #0b7dda; }
+
+  /* Stock page styles */
+  #stockPage {
+    display: none;
+    max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  }
+  #stockPage.active { display: block; }
+
+  #stockHeader {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+  }
+  #stockHeader h2 { margin: 0; }
+  #closeStockBtn {
+    padding: 8px 12px; border: none; border-radius: 4px; background-color: #f44336; color: white; cursor: pointer;
+  }
+  #closeStockBtn:hover { background-color: #d32f2f; }
+
+  /* Stock items list */
+  #stockItems {
+    margin-top: 10px;
+  }
+  .stockItem {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: #e0e0e0; border-radius: 4px;
+  }
+  .stockItem span { flex: 1; }
 </style>
 <script>
-  // Load data from localStorage if available
-  let juices = JSON.parse(localStorage.getItem('juices')) || {};
-  let milkCake = JSON.parse(localStorage.getItem('milkCake')) || {};
-  let tiramisu = JSON.parse(localStorage.getItem('tiramisu')) || {};
-  let matcha = JSON.parse(localStorage.getItem('matcha')) || {};
-  let mojito = JSON.parse(localStorage.getItem('mojito')) || {};
-  let sandwich = JSON.parse(localStorage.getItem('sandwich')) || {};
-  let topSeller = JSON.parse(localStorage.getItem('topSeller')) || {};
+  // Initialize data storage for main categories
+  let dataSections = {
+    'Juice': {},
+    'Milk-Cake': {},
+    'Tiramisu': {},
+    'Matcha': {},
+    'Mojito': {}
+  };
+  for (let key in dataSections) {
+    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
+  }
+
+  // Initialize stock data
+  let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
 
   function saveData() {
-    localStorage.setItem('juices', JSON.stringify(juices));
-    localStorage.setItem('milkCake', JSON.stringify(milkCake));
-    localStorage.setItem('tiramisu', JSON.stringify(tiramisu));
-    localStorage.setItem('matcha', JSON.stringify(matcha));
-    localStorage.setItem('mojito', JSON.stringify(mojito));
-    localStorage.setItem('sandwich', JSON.stringify(sandwich));
-    localStorage.setItem('topSeller', JSON.stringify(topSeller));
+    for (let section in dataSections) {
+      localStorage.setItem(section, JSON.stringify(dataSections[section]));
+    }
+    localStorage.setItem('Stock', JSON.stringify(stockItems));
   }
 
   function showSection(id) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('section, #stockPage').forEach(s => s.classList.remove('active'));
+    if (id === 'Stock') {
+      document.getElementById('stockPage').classList.add('active');
+    } else {
+      document.getElementById(id).classList.add('active');
+    }
   }
 
-  // Functions for adding items
-  function addItem(category, inputId) {
+  // Add new item to main sections
+  function addItem(sectionName, inputId) {
     const name = document.getElementById(inputId).value.trim();
-    if (!name || window[category][name]) { alert('Enter a valid and new item name'); return; }
-    window[category][name] = 0;
+    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
+    dataSections[sectionName][name] = 0;
     document.getElementById(inputId).value = '';
-    displayCategory(category);
+    displaySectionItems(sectionName);
+    updateTopSaler();
     saveData();
   }
 
-  // Generic display functions
-  function displayCategory(category) {
-    const containerId = category + 'Items';
-    const container = document.getElementById(containerId);
+  // Display items in main sections with delete button
+  function displaySectionItems(sectionName) {
+    const container = document.getElementById('itemsContainer_' + sectionName);
+    if (!container) return;
     container.innerHTML = '';
-    const items = window[category];
+    const items = dataSections[sectionName];
     for (const name in items) {
       const div = document.createElement('div');
       div.className = 'item';
@@ -76,9 +165,7 @@
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
-      minusBtn.onclick = () => {
-        if (items[name] > 0) { items[name]--; displayCategory(category); saveData(); }
-      };
+      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateTopSaler(); saveData(); } };
 
       const countSpan = document.createElement('span');
       countSpan.className = 'counter';
@@ -86,206 +173,221 @@
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { items[name]++; displayCategory(category); saveData(); };
+      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateTopSaler(); saveData(); };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.innerText = 'x';
+      // Updated delete handler with page reload
+      deleteBtn.onclick = () => {
+        if (confirm(`Delete "${name}"?`)) {
+          delete dataSections[sectionName][name];
+          saveData();
+          location.reload(); // Force page reload to update display
+        }
+      };
 
       div.appendChild(n);
       div.appendChild(minusBtn);
       div.appendChild(countSpan);
       div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
       container.appendChild(div);
     }
   }
 
+  // Reset all counts
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
-      for (const category of ['juices', 'milkCake', 'tiramisu', 'matcha', 'mojito', 'sandwich', 'topSeller']) {
-        for (const name in window[category]) {
-          window[category][name] = 0;
+      for (let section in dataSections) {
+        for (let item in dataSections[section]) {
+          dataSections[section][item] = 0;
         }
+        displaySectionItems(section);
       }
-      displayJuice();
-      displayMilkCake();
-      displayTiramisu();
-      displayMatcha();
-      displayMojito();
-      displaySandwich();
-      displayTopSeller();
-      updateSummary();
+      updateTopSaler();
       saveData();
     }
   }
 
-  function updateSummary() {
-    const summary = document.getElementById('summary');
-    summary.innerHTML = '';
-
-    for (const category of ['juices', 'milkCake', 'tiramisu', 'matcha', 'mojito', 'sandwich']) {
-      const items = window[category];
-      for (const name in items) {
-        const p = document.createElement('p');
-        p.innerText = `${category.charAt(0).toUpperCase() + category.slice(1)} - ${name}: ${items[name]} sold`;
-        summary.appendChild(p);
+  // Update Top Seller display
+  function updateTopSaler() {
+    let totalSales = {};
+    for (let section in dataSections) {
+      for (const name in dataSections[section]) {
+        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
       }
     }
-    // Top Seller can be summarized separately or as needed
-    const topSellerCount = window['topSeller'];
-    for (const name in topSellerCount) {
-      const p = document.createElement('p');
-      p.innerText = `Top Seller - ${name}: ${topSellerCount[name]} sold`;
-      summary.appendChild(p);
+    let maxCount = -1;
+    let topItem = '';
+    for (const name in totalSales) {
+      if (totalSales[name] > maxCount) {
+        maxCount = totalSales[name];
+        topItem = name;
+      }
+    }
+    document.getElementById('topSellerText').innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
+  }
+
+  // Display stock items with updated numbers
+  function displayStock() {
+    const container = document.getElementById('stockItems');
+    container.innerHTML = '';
+    for (const item in stockItems) {
+      const div = document.createElement('div');
+      div.className = 'stockItem';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.innerText = item;
+
+      const controlsDiv = document.createElement('div');
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (stockItems[item] > 0) { stockItems[item]--; saveData(); displayStock(); } };
+
+      const countSpan = document.createElement('span');
+      countSpan.innerText = stockItems[item];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { stockItems[item]++; saveData(); displayStock(); };
+
+      const xBtn = document.createElement('button');
+      xBtn.innerText = 'x';
+      xBtn.onclick = () => {
+        if (confirm(`Delete stock item "${item}"?`)) {
+          delete stockItems[item];
+          saveData();
+          displayStock();
+        }
+      };
+
+      controlsDiv.appendChild(minusBtn);
+      controlsDiv.appendChild(plusBtn);
+      controlsDiv.appendChild(xBtn);
+
+      div.appendChild(nameSpan);
+      div.appendChild(controlsDiv);
+
+      container.appendChild(div);
     }
   }
 
-  // Initial display
-  window.onload = () => {
-    displayJuice();
-    displayMilkCake();
-    displayTiramisu();
-    displayMatcha();
-    displayMojito();
-    displaySandwich();
-    displayTopSeller();
-    updateSummary();
-  };
-
-  // Specific display functions for each category
-  function displayJuice() { displayCategory('juices'); }
-  function displayMilkCake() { displayCategory('milkCake'); }
-  function displayTiramisu() { displayCategory('tiramisu'); }
-  function displayMatcha() { displayCategory('matcha'); }
-  function displayMojito() { displayCategory('mojito'); }
-  function displaySandwich() { displayCategory('sandwich'); }
-  function displayTopSeller() { displayCategory('topSeller'); }
-
-  // Adding new items
-  function addJuice() { addItem('juices', 'juiceName'); }
-  function addMilkCake() { addItem('milkCake', 'milkCakeName'); }
-  function addTiramisu() { addItem('tiramisu', 'tiramisuName'); }
-  function addMatcha() { addItem('matcha', 'matchaName'); }
-  function addMojito() { addItem('mojito', 'mojitoName'); }
-  function addSandwich() { addItem('sandwich', 'sandwichName'); }
-  function addTopSeller() { addItem('topSeller', 'topSellerName'); }
-
-  // For the "Stock" section
-  function updateStock() {
-    const stockInputs = document.querySelectorAll('#stockInputs input');
-    stockInputs.forEach(input => {
-      const itemName = input.dataset.name;
-      const value = parseInt(input.value) || 0;
-      if (window['stock'] === undefined) window['stock'] = {};
-      window['stock'][itemName] = value;
-    });
-    alert('Stock updated!');
+  function addStockItem() {
+    const input = document.getElementById('stockInput');
+    const name = input.value.trim();
+    if (!name || stockItems[name]) { alert('Enter a valid and new stock item'); return; }
+    stockItems[name] = 0;
+    input.value = '';
+    displayStock();
+    saveData();
   }
 
+  // When page loads
+  window.onload = () => {
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
+    displayStock();
+    updateTopSaler();
+  };
 </script>
 </head>
 <body>
 
-<h1>JUIXY - Juice & Dessert</h1>
-
-<button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
-
-<div id="stockSection">
-  <h3>Stock</h3>
-  <div id="stockInputs">
-    <!-- Stock inputs will be added dynamically -->
+<!-- Header with name and buttons -->
+<div id="header">
+  <h1 style="margin:0; color:green;">JUIXY</h1>
+  <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
+    <button id="stockBtn" onclick="showSection('Stock')">Stock</button>
+    <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
-  <button onclick="updateStock()">Update Stock</button>
 </div>
 
-<nav>
-  <span onclick="showSection('juiceSection')">Juice</span>
-  <span onclick="showSection('milkCakeSection')">Milk-Cake</span>
-  <span onclick="showSection('tiramisuSection')">Tiramisu</span>
-  <span onclick="showSection('matchaSection')">Matcha</span>
-  <span onclick="showSection('mojitoSection')">Mojito</span>
-  <span onclick="showSection('sandwichSection')">Sandwich</span>
-  <span onclick="showSection('topSellerSection')">Top Seller</span>
-</nav>
+<!-- Navigation menu -->
+<div id="nav">
+  <span onclick="showSection('Juice')">Juice</span>
+  <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
+  <span onclick="showSection('Tiramisu')">Tiramisu</span>
+  <span onclick="showSection('Matcha')">Matcha</span>
+  <span onclick="showSection('Mojito')">Mojito</span>
+  </div>
 
-<!-- Juice Section -->
-<section id="juiceSection" class="active">
+<!-- Main sections for categories -->
+<!-- Juice -->
+<section id="Juice" class="active">
   <h2>Add New Juice</h2>
-  <input type="text" id="juiceName" placeholder="Enter juice name" />
-  <button onclick="addJuice()">Add Juice</button>
+  <div class="addSection">
+    <input type="text" id="juiceInput" placeholder="Enter juice name" />
+    <button onclick="addItem('Juice', 'juiceInput')">Add Juice</button>
+  </div>
   <h3>Juice List</h3>
-  <div id="juiceItems"></div>
+  <div id="itemsContainer_Juice"></div>
 </section>
 
-<!-- Milk-Cake Section -->
-<section id="milkCakeSection">
+<!-- Milk-Cake -->
+<section id="Milk-Cake">
   <h2>Add New Milk-Cake</h2>
-  <input type="text" id="milkCakeName" placeholder="Enter Milk-Cake name" />
-  <button onclick="addMilkCake()">Add Milk-Cake</button>
+  <div class="addSection">
+    <input type="text" id="milkCakeInput" placeholder="Enter Milk-Cake name" />
+    <button onclick="addItem('Milk-Cake', 'milkCakeInput')">Add Milk-Cake</button>
+  </div>
   <h3>Milk-Cake List</h3>
-  <div id="milkCakeItems"></div>
+  <div id="itemsContainer_Milk-Cake"></div>
 </section>
 
-<!-- Tiramisu Section -->
-<section id="tiramisuSection">
+<!-- Tiramisu -->
+<section id="Tiramisu">
   <h2>Add New Tiramisu</h2>
-  <input type="text" id="tiramisuName" placeholder="Enter Tiramisu name" />
-  <button onclick="addTiramisu()">Add Tiramisu</button>
+  <div class="addSection">
+    <input type="text" id="tiramisuInput" placeholder="Enter Tiramisu name" />
+    <button onclick="addItem('Tiramisu', 'tiramisuInput')">Add Tiramisu</button>
+  </div>
   <h3>Tiramisu List</h3>
-  <div id="tiramisuItems"></div>
+  <div id="itemsContainer_Tiramisu"></div>
 </section>
 
-<!-- Matcha Section -->
-<section id="matchaSection">
+<!-- Matcha -->
+<section id="Matcha">
   <h2>Add New Matcha</h2>
-  <input type="text" id="matchaName" placeholder="Enter Matcha name" />
-  <button onclick="addMatcha()">Add Matcha</button>
+  <div class="addSection">
+    <input type="text" id="matchaInput" placeholder="Enter Matcha name" />
+    <button onclick="addItem('Matcha', 'matchaInput')">Add Matcha</button>
+  </div>
   <h3>Matcha List</h3>
-  <div id="matchaItems"></div>
+  <div id="itemsContainer_Matcha"></div>
 </section>
 
-<!-- Mojito Section -->
-<section id="mojitoSection">
+<!-- Mojito -->
+<section id="Mojito">
   <h2>Add New Mojito</h2>
-  <input type="text" id="mojitoName" placeholder="Enter Mojito name" />
-  <button onclick="addMojito()">Add Mojito</button>
+  <div class="addSection">
+    <input type="text" id="mojitoInput" placeholder="Enter Mojito name" />
+    <button onclick="addItem('Mojito', 'mojitoInput')">Add Mojito</button>
+  </div>
   <h3>Mojito List</h3>
-  <div id="mojitoItems"></div>
+  <div id="itemsContainer_Mojito"></div>
 </section>
 
-<!-- Sandwich Section -->
-<section id="sandwichSection">
-  <h2>Add New Sandwich</h2>
-  <input type="text" id="sandwichName" placeholder="Enter Sandwich name" />
-  <button onclick="addSandwich()">Add Sandwich</button>
-  <h3>Sandwich List</h3>
-  <div id="sandwichItems"></div>
-</section>
+<!-- Removed Top Seller section here -->
 
-<!-- Top Seller Section -->
-<section id="topSellerSection">
-  <h2>Add New Top Seller</h2>
-  <input type="text" id="topSellerName" placeholder="Enter Top Seller name" />
-  <button onclick="addTopSeller()">Add Top Seller</button>
-  <h3>Top Seller List</h3>
-  <div id="topSellerItems"></div>
-</section>
-
-<h2>Sales Summary</h2>
-<div id="summary"></div>
+<!-- Stock Page -->
+<div id="stockPage">
+  <div id="stockHeader">
+    <h2>Stock Management</h2>
+    <button id="closeStockBtn" onclick="showSection('')">Close</button>
+  </div>
+  <div>
+    <input type="text" id="stockInput" placeholder="New stock item" />
+    <button onclick="addStockItem()">Add Stock Item</button>
+  </div>
+  <div id="stockItems"></div>
+</div>
 
 <script>
-  // Initialize stock data
-  document.addEventListener('DOMContentLoaded', () => {
-    const stockDiv = document.getElementById('stockInputs');
-    // For demonstration, predefine some stock items or allow user to add
-    const stockItems = ['Juice', 'Milk-Cake', 'Tiramisu', 'Matcha', 'Mojito', 'Sandwich'];
-    stockItems.forEach(item => {
-      const div = document.createElement('div');
-      div.innerHTML = `
-        <label>${item} Stock: </label>
-        <input type="number" data-name="${item}" value="0" />
-      `;
-      stockDiv.appendChild(div);
-    });
-  });
+  // All scripts as before...
+  // No change needed here
 </script>
-
 </body>
 </html>
