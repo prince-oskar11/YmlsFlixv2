@@ -37,6 +37,7 @@
   }
   #stockBtn { background-color: #2196F3; color: white; }
   #clearBtn { background-color: #f44336; color: white; }
+
   /* Navigation styles */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
@@ -57,12 +58,13 @@
     margin-top: 0;
   }
   /* Items list styles */
-  .item { display: flex; align-items: center; margin-bottom: 10px; }
+  .item { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
   .itemName { flex: 1; font-size: 16px; }
+  .stockLevel { margin-left: 10px; font-weight: bold; color: #555; }
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
   button:hover { background-color: #45a049; }
-  /* X delete button styling */
+  /* Delete button styling */
   .deleteBtn {
     background-color: #f44336; /* red */
     color: white;
@@ -84,6 +86,13 @@
     padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius:4px; cursor:pointer;
   }
   .addSection button:hover { background-color: #0b7dda; }
+  /* Add stock input styles */
+  .stockSection {
+    margin-top: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+  }
+  .stockSection input {
+    padding: 8px; width: 100px; border: 1px solid #ccc; border-radius:4px;
+  }
 </style>
 <script>
   // Initialize data storage
@@ -94,26 +103,25 @@
     'Matcha': {},
     'Mojito': {}
   };
+  let stockData = JSON.parse(localStorage.getItem('Stock')) || {};
 
   // Load data from localStorage
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
 
-  // Save data to localStorage
   function saveData() {
     for (let section in dataSections) {
       localStorage.setItem(section, JSON.stringify(dataSections[section]));
     }
+    localStorage.setItem('Stock', JSON.stringify(stockData));
   }
 
-  // Show section
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  // Add item
   function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[section][name]) {
@@ -127,7 +135,6 @@
     saveData();
   }
 
-  // Display items
   function displayItems(section) {
     const container = document.getElementById('itemsContainer_' + section);
     if (!container) return;
@@ -139,6 +146,11 @@
       const n = document.createElement('span');
       n.className = 'itemName';
       n.innerText = name;
+
+      const stockLevelSpan = document.createElement('span');
+      stockLevelSpan.className = 'stockLevel';
+      const stockCount = stockData[name] || 0;
+      stockLevelSpan.innerText = `Stock: ${stockCount}`;
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
@@ -152,12 +164,14 @@
       plusBtn.innerText = '+';
       plusBtn.onclick = () => { dataSections[section][name]++; displayItems(section); updateSummary(); saveData(); };
 
+      // delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = 'X';
       deleteBtn.className = 'deleteBtn';
       deleteBtn.onclick = () => {
         if (confirm('Are you sure you want to delete "' + name + '"?')) {
           delete dataSections[section][name];
+          delete stockData[name]; // Optional: remove stock info when item deleted
           displayItems(section);
           updateSummary();
           saveData();
@@ -165,6 +179,7 @@
       };
 
       div.appendChild(n);
+      div.appendChild(stockLevelSpan);
       div.appendChild(minusBtn);
       div.appendChild(countSpan);
       div.appendChild(plusBtn);
@@ -173,7 +188,10 @@
     }
   }
 
-  // Reset all counts
+  function updateSummary() {
+    // Placeholder for any summary updates if needed
+  }
+
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
       for (let section in dataSections) {
@@ -183,11 +201,9 @@
         displayItems(section);
       }
       saveData();
-      updateSummary();
     }
   }
 
-  // Show sorted top sellers
   function showTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -203,12 +219,24 @@
     alert(msg);
   }
 
-  // Initialize display
+  function addStock(category) {
+    const inputId = 'stockInput_' + category;
+    const qty = parseInt(document.getElementById(inputId).value);
+    if (isNaN(qty) || qty <= 0) {
+      alert('Enter a valid number');
+      return;
+    }
+    stockData[category] = (stockData[category] || 0) + qty;
+    document.getElementById(inputId).value = '';
+    saveData();
+    alert('Stock added successfully');
+    // Optionally, update stock display if needed
+  }
+
   window.onload = () => {
     for (let section in dataSections) {
       displayItems(section);
     }
-    updateSummary();
   };
 </script>
 </head>
@@ -290,7 +318,6 @@
     for (let section in dataSections) {
       displayItems(section);
     }
-    updateSummary();
   }
 </script>
 
