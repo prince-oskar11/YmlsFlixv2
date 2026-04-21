@@ -58,7 +58,6 @@
   h2 {
     color: brown;
     margin-top: 0;
-    cursor: pointer;
   }
   /* Items list styles */
   .item { display: flex; align-items: center; margin-bottom: 10px; }
@@ -88,22 +87,6 @@
     padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius:4px; cursor:pointer;
   }
   .addSection button:hover { background-color: #0b7dda; }
-  /* Add stock input styles */
-  .stockSection {
-    margin-top: 10px; margin-bottom: 20px;
-  }
-  .stockSection input {
-    padding: 8px; width: 100px; margin-right: 10px; border: 1px solid #ccc; border-radius:4px;
-  }
-  /* Sales summary styles */
-  #summary {
-    max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
-  }
-  #summary h2 { margin-top: 0; cursor:pointer; }
-  /* Top seller list */
-  #topSaler {
-    margin-top: 20px;
-  }
 </style>
 <script>
   // Initialize data storage
@@ -114,7 +97,6 @@
     'Matcha': {},
     'Mojito': {}
   };
-  let stockData = JSON.parse(localStorage.getItem('Stock')) || {};
 
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
@@ -124,7 +106,6 @@
     for (let section in dataSections) {
       localStorage.setItem(section, JSON.stringify(dataSections[section]));
     }
-    localStorage.setItem('Stock', JSON.stringify(stockData));
   }
 
   function showSection(id) {
@@ -205,7 +186,7 @@
     }
   }
 
-  // Show top sellers list sorted
+  // Show sorted top sellers
   function showTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -213,9 +194,7 @@
         totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
       }
     }
-    // Convert to array and sort
     const sortedItems = Object.entries(totalSales).sort((a, b) => b[1] - a[1]);
-    // Build display string
     let msg = 'Items sold (highest to lowest):\n';
     for (const [name, count] of sortedItems) {
       msg += `${name}: ${count}\n`;
@@ -223,21 +202,8 @@
     alert(msg);
   }
 
-  // Add stock quantity to category
-  function addStock(category) {
-    const inputId = 'stockInput_' + category;
-    const qty = parseInt(document.getElementById(inputId).value);
-    if (isNaN(qty) || qty <= 0) {
-      alert('Enter a valid number');
-      return;
-    }
-    stockData[category] = (stockData[category] || 0) + qty;
-    document.getElementById(inputId).value = '';
-    saveData();
-    alert('Stock added successfully');
-  }
-
-  // Initialize on page load
+  // No "Add to Stock" sections anymore, so remove related functions and elements.
+  // Just initialize the display
   window.onload = () => {
     for (let section in dataSections) {
       displaySectionItems(section);
@@ -251,7 +217,6 @@
 <!-- Header with name and buttons -->
 <div id="header">
   <h1 style="margin:0; color:green;">JUIXY</h1>
-  <!-- Top buttons -->
   <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
     <button id="stockBtn" onclick="alert('Stock management not fully implemented')">Stock</button>
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
@@ -268,8 +233,7 @@
   <span onclick="showTopSaler()">Top Seller</span>
 </div>
 
-<!-- Sections for each category -->
-<!-- Juice -->
+<!-- Sections -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
   <div class="addSection">
@@ -278,14 +242,8 @@
   </div>
   <h3>Juice List</h3>
   <div id="itemsContainer_Juice"></div>
-  <h3>Add Stock to Juice</h3>
-  <div class="stockSection">
-    <input type="number" id="stockInput_Juice" placeholder="Quantity" />
-    <button onclick="addStock('Juice')">Add to Stock</button>
-  </div>
 </section>
 
-<!-- Milk-Cake -->
 <section id="Milk-Cake">
   <h2>Add New Milk-Cake</h2>
   <div class="addSection">
@@ -294,14 +252,8 @@
   </div>
   <h3>Milk-Cake List</h3>
   <div id="itemsContainer_Milk-Cake"></div>
-  <h3>Add Stock to Milk-Cake</h3>
-  <div class="stockSection">
-    <input type="number" id="stockInput_Milk-Cake" placeholder="Quantity" />
-    <button onclick="addStock('Milk-Cake')">Add to Stock</button>
-  </div>
 </section>
 
-<!-- Tiramisu -->
 <section id="Tiramisu">
   <h2>Add New Tiramisu</h2>
   <div class="addSection">
@@ -310,14 +262,8 @@
   </div>
   <h3>Tiramisu List</h3>
   <div id="itemsContainer_Tiramisu"></div>
-  <h3>Add Stock to Tiramisu</h3>
-  <div class="stockSection">
-    <input type="number" id="stockInput_Tiramisu" placeholder="Quantity" />
-    <button onclick="addStock('Tiramisu')">Add to Stock</button>
-  </div>
 </section>
 
-<!-- Matcha -->
 <section id="Matcha">
   <h2>Add New Matcha</h2>
   <div class="addSection">
@@ -326,14 +272,8 @@
   </div>
   <h3>Matcha List</h3>
   <div id="itemsContainer_Matcha"></div>
-  <h3>Add Stock to Matcha</h3>
-  <div class="stockSection">
-    <input type="number" id="stockInput_Matcha" placeholder="Quantity" />
-    <button onclick="addStock('Matcha')">Add to Stock</button>
-  </div>
 </section>
 
-<!-- Mojito -->
 <section id="Mojito">
   <h2>Add New Mojito</h2>
   <div class="addSection">
@@ -342,14 +282,9 @@
   </div>
   <h3>Mojito List</h3>
   <div id="itemsContainer_Mojito"></div>
-  <h3>Add Stock to Mojito</h3>
-  <div class="stockSection">
-    <input type="number" id="stockInput_Mojito" placeholder="Quantity" />
-    <button onclick="addStock('Mojito')">Add to Stock</button>
-  </div>
 </section>
 
-<h2>Top Seller</h2> <!-- this is clickable to show sorted list -->
+<h2>Top Seller</h2> <!-- clickable header to show sorted list -->
 <div id="topSellerList" style="margin:20px auto; max-width:800px; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); cursor:pointer;" onclick="showTopSaler()">
   Click here to see top selling items
 </div>
@@ -442,9 +377,7 @@
         totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
       }
     }
-    // Convert to array and sort
     const sortedItems = Object.entries(totalSales).sort((a, b) => b[1] - a[1]);
-    // Build display string
     let msg = 'Items sold (highest to lowest):\n';
     for (const [name, count] of sortedItems) {
       msg += `${name}: ${count}\n`;
@@ -452,20 +385,7 @@
     alert(msg);
   }
 
-  // Add stock quantity to a category
-  function addStock(category) {
-    const inputId = 'stockInput_' + category;
-    const qty = parseInt(document.getElementById(inputId).value);
-    if (isNaN(qty) || qty <= 0) {
-      alert('Enter a valid number');
-      return;
-    }
-    // save in stockData (not used for display here, just stored)
-    // for now, just save
-    localStorage.setItem('Stock', JSON.stringify(stockData));
-    alert('Stock added successfully');
-  }
-
+  // No "Add to Stock" sections anymore
   // Initialize on page load
   window.onload = () => {
     for (let section in dataSections) {
