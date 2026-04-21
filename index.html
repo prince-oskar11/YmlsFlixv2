@@ -110,23 +110,13 @@
     padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius:4px; cursor:pointer;
   }
   .addSection button:hover { background-color: #0b7dda; }
-
-  /* Stock section styles (below install button) */
-  #stockSection {
-    display: none;
-    background: #fff; padding: 20px; margin: 20px auto; max-width: 800px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
-  }
-  #stockSection h2 { margin-top: 0; }
-  .stockItem { display: flex; align-items: center; margin-bottom: 10px; }
-  .stockItem span { flex: 1; }
 </style>
 </head>
 <body>
-
 <!-- Header with "JUIXY" and "Install App" button at top-left, and "Clear Counts" at top-right -->
 <div id="header">
   <h1 style="margin:0;">JUIXY</h1>
-  <button id="installBtn" onclick="toggleStockSection()">Install App</button>
+  <button id="installBtn" onclick="alert('Install app as a shortcut or PWA')">Install App</button>
   <div id="topButtons" style="position:absolute; top:20px; right:20px;">
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
@@ -153,7 +143,6 @@
   <h3>Juice List</h3>
   <div id="itemsContainer_Juice"></div>
 </section>
-
 <section id="Milk-Cake">
   <h2>Add New Milk-Cake</h2>
   <div class="addSection">
@@ -163,7 +152,6 @@
   <h3>Milk-Cake List</h3>
   <div id="itemsContainer_Milk-Cake"></div>
 </section>
-
 <section id="Tiramisu">
   <h2>Add New Tiramisu</h2>
   <div class="addSection">
@@ -173,7 +161,6 @@
   <h3>Tiramisu List</h3>
   <div id="itemsContainer_Tiramisu"></div>
 </section>
-
 <section id="Matcha">
   <h2>Add New Matcha</h2>
   <div class="addSection">
@@ -183,7 +170,6 @@
   <h3>Matcha List</h3>
   <div id="itemsContainer_Matcha"></div>
 </section>
-
 <section id="Mojito">
   <h2>Add New Mojito</h2>
   <div class="addSection">
@@ -193,7 +179,6 @@
   <h3>Mojito List</h3>
   <div id="itemsContainer_Mojito"></div>
 </section>
-
 <section id="Sandwich">
   <h2>Add New Sandwich</h2>
   <div class="addSection">
@@ -204,17 +189,6 @@
   <div id="itemsContainer_Sandwich"></div>
 </section>
 
-<!-- Stock management section, hidden by default -->
-<div id="stockSection" style="display:none;">
-  <h2>Stock Management</h2>
-  <div id="stockItems"></div>
-  <div class="addSection" style="margin-top:20px;">
-    <input type="text" id="newStockItem" placeholder="New stock item" />
-    <button onclick="addStock()">Add</button>
-  </div>
-  <button onclick="toggleStockSection()">Close Stock</button>
-</div>
-
 <!-- Top Seller Page -->
 <section id="TopSaler">
   <h2>Top Seller</h2>
@@ -223,7 +197,7 @@
 </section>
 
 <script>
-  // Data storage
+  // Data storage for categories
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -232,8 +206,6 @@
     'Mojito': {},
     'Sandwich': {}
   };
-  let stockData = JSON.parse(localStorage.getItem('stockData')) || {};
-
   // Load existing data
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
@@ -244,7 +216,6 @@
     for (let sec in dataSections) {
       localStorage.setItem(sec, JSON.stringify(dataSections[sec]));
     }
-    localStorage.setItem('stockData', JSON.stringify(stockData));
   }
 
   // Show pages
@@ -254,18 +225,7 @@
     document.getElementById(id).classList.add('active');
   }
 
-  // Toggle stock section
-  function toggleStockSection() {
-    const stockDiv = document.getElementById('stockSection');
-    if (stockDiv.style.display === 'none') {
-      stockDiv.style.display = 'block';
-      displayStock();
-    } else {
-      stockDiv.style.display = 'none';
-    }
-  }
-
-  // Add item in main categories
+  // Add item
   function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[section][name]) {
@@ -362,63 +322,6 @@
       saveData();
     }
   }
-
-  // Add stock item
-  function addStock() {
-    const name = document.getElementById('newStockItem').value.trim();
-    if (!name || stockData[name]) {
-      alert('Enter a new stock item name');
-      return;
-    }
-    stockData[name] = 0;
-    document.getElementById('newStockItem').value = '';
-    displayStock();
-    saveData();
-  }
-
-  // Display stock items
-  function displayStock() {
-    const container = document.getElementById('stockItems');
-    if (!container) return;
-    container.innerHTML = '';
-    for (const name in stockData) {
-      const div = document.createElement('div');
-      div.className = 'stockItem';
-
-      const nameSpan = document.createElement('span');
-      nameSpan.innerText = name;
-
-      const minusBtn = document.createElement('button');
-      minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (stockData[name] > 0) { stockData[name]--; saveData(); displayStock(); } };
-
-      const plusBtn = document.createElement('button');
-      plusBtn.innerText = '+';
-      plusBtn.onclick = () => { stockData[name]++; saveData(); displayStock(); };
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.innerText = 'X';
-      deleteBtn.className = 'deleteBtn';
-      deleteBtn.onclick = () => {
-        if (confirm('Delete stock item "' + name + '"?')) {
-          delete stockData[name];
-          saveData();
-          displayStock();
-        }
-      };
-
-      div.appendChild(nameSpan);
-      div.appendChild(minusBtn);
-      div.appendChild(plusBtn);
-      div.appendChild(deleteBtn);
-      container.appendChild(div);
-    }
-  }
-
-  // Initialize display for stock
-  window.onload = () => {
-    displayStock();
-  };
 </script>
 </body>
 </html>
