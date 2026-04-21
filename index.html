@@ -7,11 +7,11 @@
   body {
     font-family: Arial, sans-serif;
     margin:0; padding:0;
-    background-color: #f5deb3; /* beige background */
+    background-color: #f5deb3; /* beige background for entire app */
   }
   /* Header styles */
   #header {
-    background-color: #4CAF50; /* green background */
+    background-color: #f5deb3; /* beige background for JUIXY title background */
     padding: 20px;
     text-align: center;
     position: relative;
@@ -19,7 +19,7 @@
   #header h1 {
     margin: 0;
     font-size: 36px;
-    color: green; /* name in green */
+    color: beige; /* change to beige */
   }
   /* Top buttons container */
   #topButtons {
@@ -64,7 +64,7 @@
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
   button:hover { background-color: #45a049; }
-  /* Delete button styling */
+  /* Delete button style */
   .deleteBtn {
     background-color: #f44336; /* red */
     color: white;
@@ -86,13 +86,16 @@
     padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius:4px; cursor:pointer;
   }
   .addSection button:hover { background-color: #0b7dda; }
-  /* Add stock input styles */
-  .stockSection {
-    margin-top: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+  /* Stock management page styles */
+  #stockPage {
+    display: none;
+    max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
-  .stockSection input {
-    padding: 8px; width: 100px; border: 1px solid #ccc; border-radius:4px;
-  }
+  #stockPage.active { display: block; }
+  #stockPage h2 { margin-top: 0; }
+  /* Stock item list styles in stock page */
+  .stockItem { display: flex; align-items: center; margin-bottom: 10px; }
+  .stockItem span { flex: 1; }
 </style>
 <script>
   // Initialize data storage
@@ -101,14 +104,15 @@
     'Milk-Cake': {},
     'Tiramisu': {},
     'Matcha': {},
-    'Mojito': {}
+    'Mojito': {},
+    'Sandwich': {} // add Sandwich section
   };
-  let stockData = JSON.parse(localStorage.getItem('Stock')) || {};
 
   // Load data from localStorage
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
+  let stockData = JSON.parse(localStorage.getItem('Stock')) || {};
 
   function saveData() {
     for (let section in dataSections) {
@@ -118,10 +122,11 @@
   }
 
   function showSection(id) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('section, #stockPage').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
+  // Add new item
   function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[section][name]) {
@@ -135,6 +140,7 @@
     saveData();
   }
 
+  // Display items
   function displayItems(section) {
     const container = document.getElementById('itemsContainer_' + section);
     if (!container) return;
@@ -147,10 +153,10 @@
       n.className = 'itemName';
       n.innerText = name;
 
-      const stockLevelSpan = document.createElement('span');
-      stockLevelSpan.className = 'stockLevel';
       const stockCount = stockData[name] || 0;
-      stockLevelSpan.innerText = `Stock: ${stockCount}`;
+      const stockSpan = document.createElement('span');
+      stockSpan.className = 'stockLevel';
+      stockSpan.innerText = `Stock: ${stockCount}`;
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
@@ -171,7 +177,7 @@
       deleteBtn.onclick = () => {
         if (confirm('Are you sure you want to delete "' + name + '"?')) {
           delete dataSections[section][name];
-          delete stockData[name]; // Optional: remove stock info when item deleted
+          delete stockData[name]; // remove stock info when item is deleted
           displayItems(section);
           updateSummary();
           saveData();
@@ -179,7 +185,7 @@
       };
 
       div.appendChild(n);
-      div.appendChild(stockLevelSpan);
+      div.appendChild(stockSpan);
       div.appendChild(minusBtn);
       div.appendChild(countSpan);
       div.appendChild(plusBtn);
@@ -189,7 +195,7 @@
   }
 
   function updateSummary() {
-    // Placeholder for any summary updates if needed
+    // optional: implement if needed
   }
 
   function resetCounts() {
@@ -219,18 +225,54 @@
     alert(msg);
   }
 
-  function addStock(category) {
-    const inputId = 'stockInput_' + category;
-    const qty = parseInt(document.getElementById(inputId).value);
-    if (isNaN(qty) || qty <= 0) {
-      alert('Enter a valid number');
-      return;
+  function openStockPage() {
+    showSection('stockPage');
+    displayStockItems();
+  }
+
+  function displayStockItems() {
+    const container = document.getElementById('stockItems');
+    container.innerHTML = '';
+    for (const name in stockData) {
+      const div = document.createElement('div');
+      div.className = 'stockItem';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.innerText = name;
+
+      const qtySpan = document.createElement('span');
+      qtySpan.innerText = 'Stock: ' + stockData[name];
+
+      // add +/- buttons
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => {
+        if (stockData[name] > 0) { stockData[name]--; saveData(); displayStockItems(); }
+      };
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { stockData[name]++; saveData(); displayStockItems(); };
+
+      // delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerText = 'X';
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.onclick = () => {
+        if (confirm('Delete stock for ' + name + '?')) {
+          delete stockData[name];
+          saveData();
+          displayStockItems();
+        }
+      };
+
+      div.appendChild(nameSpan);
+      div.appendChild(qtySpan);
+      div.appendChild(minusBtn);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      document.getElementById('stockItems').appendChild(div);
     }
-    stockData[category] = (stockData[category] || 0) + qty;
-    document.getElementById(inputId).value = '';
-    saveData();
-    alert('Stock added successfully');
-    // Optionally, update stock display if needed
   }
 
   window.onload = () => {
@@ -244,9 +286,9 @@
 
 <!-- Header -->
 <div id="header">
-  <h1 style="margin:0; color:green;">JUIXY</h1>
+  <h1 style="margin:0; color:#f5deb3;">JUIXY</h1>
   <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
-    <button id="stockBtn" onclick="alert('Stock management not fully implemented')">Stock</button>
+    <button id="stockBtn" onclick="openStockPage()">Stock</button>
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
 </div>
@@ -258,10 +300,11 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
-  <span style="cursor:pointer; font-weight:bold; color:green;" onclick="showTopSaler()">Top Seller</span>
+  <span style="cursor:pointer; font-weight:bold; color:green;" onclick="showSection('stockPage')">Stock Management</span>
+  <span style="cursor:pointer; font-weight:bold; color:green;" onclick="showSection('TopSaler')">Top Seller</span>
 </div>
 
-<!-- Sections for each category -->
+<!-- Main categories -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
   <div class="addSection">
@@ -312,14 +355,146 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
+<!-- Stock Management Page -->
+<section id="stockPage">
+  <h2>Stock Management</h2>
+  <div id="stockItems"></div>
+  <button onclick="showSection('Juice')">Back to Categories</button>
+</section>
+
+<!-- Top Seller Page -->
+<section id="TopSaler">
+  <h2>Top Seller</h2>
+  <pre id="topSalerDetails" style="white-space: pre-wrap;"></pre>
+  <button onclick="showSection('Juice')">Back to Categories</button>
+</section>
+
 <script>
-  // Display items on page load
+  // Helper to switch pages
+  function showSection(id) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Add item
+  function addItem(section, inputId) {
+    const name = document.getElementById(inputId).value.trim();
+    if (!name || dataSections[section][name]) {
+      alert('Enter a valid and new item name');
+      return;
+    }
+    dataSections[section][name] = 0;
+    document.getElementById(inputId).value = '';
+    displayItems(section);
+    saveData();
+  }
+
+  // Display items
+  function displayItems(section) {
+    const container = document.getElementById('itemsContainer_' + section);
+    if (!container) return;
+    container.innerHTML = '';
+    for (const name in dataSections[section]) {
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const n = document.createElement('span');
+      n.className = 'itemName';
+      n.innerText = name;
+
+      const stockCount = stockData[name] || 0;
+      const stockSpan = document.createElement('span');
+      stockSpan.className = 'stockLevel';
+      stockSpan.innerText = `Stock: ${stockCount}`;
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (dataSections[section][name] > 0) { dataSections[section][name]--; displayItems(section); } };
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'counter';
+      countSpan.innerText = dataSections[section][name];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { dataSections[section][name]++; displayItems(section); };
+
+      // delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerText = 'X';
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.onclick = () => {
+        if (confirm('Are you sure you want to delete "' + name + '"?')) {
+          delete dataSections[section][name];
+          delete stockData[name]; // remove stock info
+          displayItems(section);
+          saveData();
+        }
+      };
+
+      div.appendChild(n);
+      div.appendChild(stockSpan);
+      div.appendChild(minusBtn);
+      div.appendChild(countSpan);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      container.appendChild(div);
+    }
+  }
+
+  // Load data and display
   window.onload = () => {
     for (let section in dataSections) {
       displayItems(section);
     }
   }
-</script>
 
+  // Stock page functions
+  function openStockPage() {
+    showSection('stockPage');
+    displayStockItems();
+  }
+
+  function displayStockItems() {
+    const container = document.getElementById('stockItems');
+    container.innerHTML = '';
+    for (const name in stockData) {
+      const div = document.createElement('div');
+      div.className = 'stockItem';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.innerText = name;
+
+      const qtySpan = document.createElement('span');
+      qtySpan.innerText = 'Stock: ' + stockData[name];
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (stockData[name] > 0) { stockData[name]--; saveData(); displayStockItems(); } };
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { stockData[name]++; saveData(); displayStockItems(); };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerText = 'X';
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.onclick = () => {
+        if (confirm('Delete stock for ' + name + '?')) {
+          delete stockData[name];
+          saveData();
+          displayStockItems();
+        }
+      };
+
+      div.appendChild(nameSpan);
+      div.appendChild(qtySpan);
+      div.appendChild(minusBtn);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      container.appendChild(div);
+    }
+  }
+</script>
 </body>
 </html>
