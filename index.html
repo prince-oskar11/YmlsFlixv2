@@ -113,8 +113,7 @@
     'Milk-Cake': {},
     'Tiramisu': {},
     'Matcha': {},
-    'Mojito': {},
-    'Sandwich': {} // added Sandwich category
+    'Mojito': {}
   };
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
@@ -313,8 +312,7 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
-  <span onclick="showSection('Sandwich')">Sandwich</span> <!-- Added Sandwich button -->
-</div>
+  </div>
 
 <!-- Main sections for categories -->
 <!-- Juice -->
@@ -372,17 +370,6 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
-<!-- Sandwich -->
-<section id="Sandwich">
-  <h2>Add New Sandwich</h2>
-  <div class="addSection">
-    <input type="text" id="sandwichInput" placeholder="Enter Sandwich name" />
-    <button onclick="addItem('Sandwich', 'sandwichInput')">Add Sandwich</button>
-  </div>
-  <h3>Sandwich List</h3>
-  <div id="itemsContainer_Sandwich"></div>
-</section>
-
 <!-- Removed Top Seller section here -->
 
 <!-- Stock Page -->
@@ -401,8 +388,6 @@
 <script>
   // All scripts as before...
   // No change needed here
-  // (Your existing script code remains the same)
-  // ... (Already included in the previous snippet)
 </script>
 </body>
 </html>
