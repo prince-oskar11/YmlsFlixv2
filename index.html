@@ -202,7 +202,7 @@
     }
   }
 
-  // Reset all counts
+// Reset all counts
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
       for (let section in dataSections) {
@@ -217,7 +217,7 @@
   }
 
   // Update Top Seller display
-  function updateTopSellerDisplay() {
+  function updateTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
       for (const name in dataSections[section]) {
@@ -234,6 +234,7 @@
     }
     document.getElementById('topSellerText').innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
   }
+
 
   // Display stock items
   function displayStock() {
