@@ -7,12 +7,10 @@
   body {
     font-family: Arial, sans-serif;
     margin:0; padding:0;
-    background-color: #f5deb3; /* beige background */
+    background-color: #f5deb3;
   }
-
-  /* Header styles */
   #header {
-    background-color: #4CAF50; /* green background */
+    background-color: #4CAF50;
     padding: 20px;
     text-align: center;
     position: relative;
@@ -20,10 +18,8 @@
   #header h1 {
     margin: 0;
     font-size: 36px;
-    color: green; /* name in green */
+    color: green;
   }
-
-  /* Top buttons container */
   #topButtons {
     position: absolute;
     top: 20px;
@@ -39,8 +35,6 @@
   }
   #stockBtn { background-color: #2196F3; color: white; }
   #clearBtn { background-color: #f44336; color: white; }
-
-  /* Navigation styles */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
   }
@@ -48,28 +42,17 @@
     cursor: pointer; font-weight: bold; color: green; font-size: 18px; padding: 8px 12px; border-radius: 4px; transition: background 0.3s;
   }
   #nav span:hover { background-color: #c8e6c9; }
-
-  /* Main content style */
   section {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   section.active { display: block; }
-
-  /* Section header titles in brown */
-  h2 {
-    color: brown;
-    margin-top: 0;
-  }
-
-  /* Items list styles */
+  h2 { color: brown; margin-top: 0; }
   .item { display: flex; align-items: center; margin-bottom: 10px; }
   .itemName { flex: 1; font-size: 16px; }
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
   button:hover { background-color: #45a049; }
-
-  /* Add item input styles */
   .addSection {
     margin-bottom: 15px;
   }
@@ -80,14 +63,11 @@
     padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius:4px; cursor:pointer;
   }
   .addSection button:hover { background-color: #0b7dda; }
-
-  /* Stock page styles */
   #stockPage {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   #stockPage.active { display: block; }
-
   #stockHeader {
     display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
   }
@@ -96,17 +76,12 @@
     padding: 8px 12px; border: none; border-radius: 4px; background-color: #f44336; color: white; cursor: pointer;
   }
   #closeStockBtn:hover { background-color: #d32f2f; }
-
-  /* Stock items list */
   #stockItems {
     margin-top: 10px;
   }
   .stockItem {
     display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: #e0e0e0; border-radius: 4px;
   }
-  .stockItem span { flex: 1; }
-
-  /* Sale section styles */
   #Sale {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
@@ -116,7 +91,7 @@
 </head>
 <body>
 
-<!-- Header with name and buttons -->
+<!-- Header -->
 <div id="header">
   <h1 style="margin:0; color:green;">JUIXY</h1>
   <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
@@ -125,7 +100,7 @@
   </div>
 </div>
 
-<!-- Navigation menu -->
+<!-- Navigation -->
 <div id="nav">
   <span onclick="showSection('Juice')">Juice</span>
   <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
@@ -133,11 +108,10 @@
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
   <span onclick="showSection('Sandwich')">Sandwich</span>
-  <span onclick="showSection('Sale')">Sale</span> <!-- Added Sale navigation -->
+  <span onclick="showSection('Sale')">Sale</span>
 </div>
 
-<!-- Main sections for categories -->
-<!-- Juice -->
+<!-- Sections for categories -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
   <div class="addSection">
@@ -148,7 +122,6 @@
   <div id="itemsContainer_Juice"></div>
 </section>
 
-<!-- Milk-Cake -->
 <section id="Milk-Cake">
   <h2>Add New Milk-Cake</h2>
   <div class="addSection">
@@ -159,7 +132,6 @@
   <div id="itemsContainer_Milk-Cake"></div>
 </section>
 
-<!-- Tiramisu -->
 <section id="Tiramisu">
   <h2>Add New Tiramisu</h2>
   <div class="addSection">
@@ -170,7 +142,6 @@
   <div id="itemsContainer_Tiramisu"></div>
 </section>
 
-<!-- Matcha -->
 <section id="Matcha">
   <h2>Add New Matcha</h2>
   <div class="addSection">
@@ -181,7 +152,6 @@
   <div id="itemsContainer_Matcha"></div>
 </section>
 
-<!-- Mojito -->
 <section id="Mojito">
   <h2>Add New Mojito</h2>
   <div class="addSection">
@@ -192,7 +162,6 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
-<!-- Sandwich -->
 <section id="Sandwich">
   <h2>Add New Sandwich</h2>
   <div class="addSection">
@@ -203,13 +172,13 @@
   <div id="itemsContainer_Sandwich"></div>
 </section>
 
-<!-- Sale Section -->
+<!-- Sale List -->
 <section id="Sale">
   <h2>Sold Items</h2>
   <div id="saleList"></div>
 </section>
 
-<!-- Stock Page -->
+<!-- Stock Management -->
 <div id="stockPage">
   <div id="stockHeader">
     <h2>Stock Management</h2>
@@ -223,24 +192,15 @@
 </div>
 
 <script>
-  // Initialize data storage for main categories
+  // Data storage
   let dataSections = {
-    'Juice': {},
-    'Milk-Cake': {},
-    'Tiramisu': {},
-    'Matcha': {},
-    'Mojito': {},
-    'Sandwich': {}
+    'Juice': {}, 'Milk-Cake': {}, 'Tiramisu': {}, 'Matcha': {}, 'Mojito': {}, 'Sandwich': {}
   };
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
-
-  // Initialize stock data
   let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
-
-  // Initialize sales list
-  let saleItems = JSON.parse(localStorage.getItem('Sale')) || [];
+  let saleItems = JSON.parse(localStorage.getItem('Sale')) || {};
 
   function saveData() {
     for (let section in dataSections) {
@@ -261,7 +221,6 @@
     }
   }
 
-  // Add new item to main sections
   function addItem(sectionName, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
@@ -272,7 +231,6 @@
     saveData();
   }
 
-  // Display items in main sections with delete, sell, and count controls
   function displaySectionItems(sectionName) {
     const container = document.getElementById('itemsContainer_' + sectionName);
     if (!container) return;
@@ -305,7 +263,7 @@
         if (confirm(`Delete "${name}"?`)) {
           delete dataSections[sectionName][name];
           saveData();
-          displaySectionItems(sectionName); // Refresh after delete
+          displaySectionItems(sectionName);
         }
       };
 
@@ -328,7 +286,6 @@
     }
   }
 
-  // Reset all counts
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
       for (let section in dataSections) {
@@ -342,7 +299,6 @@
     }
   }
 
-  // Update Top Seller display
   function updateTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -361,7 +317,6 @@
     document.getElementById('topSellerText')?.innerText = topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
   }
 
-  // Display stock items
   function displayStock() {
     const container = document.getElementById('stockItems');
     container.innerHTML = '';
@@ -416,14 +371,12 @@
     saveData();
   }
 
-  // Record a sale
   function recordSale(itemName) {
     saleItems.unshift({ name: itemName, date: new Date().toISOString() });
     saveData();
     displaySale();
   }
 
-  // Display sold items in order
   function displaySale() {
     const container = document.getElementById('saleList');
     if (!container) return;
@@ -437,7 +390,6 @@
     });
   }
 
-  // When page loads, display all
   window.onload = () => {
     for (let section in dataSections) {
       displaySectionItems(section);
