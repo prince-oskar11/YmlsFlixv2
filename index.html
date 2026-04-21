@@ -85,151 +85,20 @@
   }
   .addSection button:hover { background-color: #0b7dda; }
 
-  /* Layout for Mojito and Top Seller side by side */
-  #mojitoAndTopSellers {
-    display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin: 20px auto; max-width: 800px;
+  /* Layout for Mojito, Sandwich, and Top Seller side by side */
+  #mojitoSandwichAndTop {
+    display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin: 20px auto; max-width: 1000px;
   }
   #Mojito {
+    flex: 1; min-width:250px;
+  }
+  #Sandwich {
     flex: 1; min-width:250px;
   }
   #topSellersSection {
     flex: 1; min-width:250px; padding:10px; background:#e0e0e0; border-radius:8px; min-height: 150px;
   }
 </style>
-<script>
-  // Initialize data storage
-  let dataSections = {
-    'Juice': {},
-    'Milk-Cake': {},
-    'Tiramisu': {},
-    'Matcha': {},
-    'Mojito': {}
-  };
-  // Load from localStorage
-  for (let key in dataSections) {
-    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
-  }
-
-  function saveData() {
-    for (let section in dataSections) {
-      localStorage.setItem(section, JSON.stringify(dataSections[section]));
-    }
-  }
-
-  function showSection(id) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-  function addItem(sectionName, inputId) {
-    const name = document.getElementById(inputId).value.trim();
-    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
-    dataSections[sectionName][name] = 0;
-    document.getElementById(inputId).value = '';
-    displaySectionItems(sectionName);
-    if (sectionName === 'Mojito') updateTopSellers();
-    saveData();
-  }
-
-  function displaySectionItems(sectionName) {
-    const container = document.getElementById('itemsContainer_' + sectionName);
-    if (!container) return;
-    container.innerHTML = '';
-    const items = dataSections[sectionName];
-    for (const name in items) {
-      const div = document.createElement('div');
-      div.className = 'item';
-
-      const n = document.createElement('span');
-      n.className = 'itemName';
-      n.innerText = name;
-
-      const minusBtn = document.createElement('button');
-      minusBtn.innerText = '-';
-      minusBtn.onclick = () => {
-        if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); if (sectionName === 'Mojito') updateTopSellers(); saveData(); }
-      };
-
-      const countSpan = document.createElement('span');
-      countSpan.className = 'counter';
-      countSpan.innerText = items[name];
-
-      const plusBtn = document.createElement('button');
-      plusBtn.innerText = '+';
-      plusBtn.onclick = () => {
-        items[name]++;
-        displaySectionItems(sectionName);
-        if (sectionName === 'Mojito') updateTopSellers();
-        saveData();
-      };
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'deleteBtn';
-      deleteBtn.innerText = 'X';
-      deleteBtn.title = 'Delete Item';
-      deleteBtn.onclick = () => {
-        if (confirm(`Are you sure you want to delete "${name}"?`)) {
-          delete dataSections[sectionName][name];
-          displaySectionItems(sectionName);
-          if (sectionName === 'Mojito') updateTopSellers();
-          saveData();
-        }
-      };
-
-      div.appendChild(n);
-      div.appendChild(minusBtn);
-      div.appendChild(countSpan);
-      div.appendChild(plusBtn);
-      div.appendChild(deleteBtn);
-      container.appendChild(div);
-    }
-  }
-
-  function resetCounts() {
-    if (confirm('Are you sure you want to reset all counts to zero?')) {
-      for (let section in dataSections) {
-        for (let item in dataSections[section]) {
-          dataSections[section][item] = 0;
-        }
-        displaySectionItems(section);
-      }
-      updateTopSellers();
-      saveData();
-    }
-  }
-
-  function updateTopSellers() {
-    let totalSales = {};
-    for (let section in dataSections) {
-      for (const name in dataSections[section]) {
-        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
-      }
-    }
-    let maxCount = -1;
-    let topItem = '';
-    for (const name in totalSales) {
-      if (totalSales[name] > maxCount) {
-        maxCount = totalSales[name];
-        topItem = name;
-      }
-    }
-    const topSellersDiv = document.getElementById('topSellersList');
-    if (topSellersDiv) {
-      if (maxCount > 0) {
-        topSellersDiv.innerHTML = `Top Seller: <strong>${topItem}</strong> with ${maxCount} sales`;
-      } else {
-        topSellersDiv.innerHTML = 'No sales yet.';
-      }
-    }
-  }
-
-  window.onload = () => {
-    for (let section in dataSections) {
-      displaySectionItems(section);
-    }
-    updateTopSellers();
-  };
-</script>
 </head>
 <body>
 
@@ -249,6 +118,7 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
+  <span onclick="showSection('Sandwich')">Sandwich</span>
   <span onclick="showSection('TopSellers')">Top Sellers</span>
 </div>
 
@@ -297,8 +167,8 @@
   <div id="itemsContainer_Matcha"></div>
 </section>
 
-<!-- Mojito and Top Seller side by side -->
-<div id="mojitoAndTopSellers" style="margin:20px auto; max-width:800px; display:flex; flex-wrap:wrap;">
+<!-- Mojito and Sandwich side by side -->
+<div id="mojitoSandwichAndTop" style="margin:20px auto; max-width:1000px; display:flex; flex-wrap:wrap;">
   <!-- Mojito -->
   <section id="Mojito" style="flex:1; min-width:250px;">
     <h2>Add New Mojito</h2>
@@ -309,6 +179,16 @@
     <h3>Mojito List</h3>
     <div id="itemsContainer_Mojito"></div>
   </section>
+  <!-- Sandwich -->
+  <section id="Sandwich" style="flex:1; min-width:250px;">
+    <h2>Add New Sandwich</h2>
+    <div class="addSection">
+      <input type="text" id="sandwichInput" placeholder="Enter Sandwich name" />
+      <button onclick="addItem('Sandwich', 'sandwichInput')">Add Sandwich</button>
+    </div>
+    <h3>Sandwich List</h3>
+    <div id="itemsContainer_Sandwich"></div>
+  </section>
   <!-- Top Seller -->
   <section id="topSellersSection" style="flex:1; min-width:250px; padding:10px; background:#e0e0e0; border-radius:8px;">
     <h2>Top Seller</h2>
@@ -317,21 +197,14 @@
 </div>
 
 <script>
-  // Load data and initialize top seller display
-  window.onload = () => {
-    for (let section in dataSections) {
-      displaySectionItems(section);
-    }
-    updateTopSellers();
-  };
-
-  // Functions from previous code snippet:
+  // Initialize data
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
     'Tiramisu': {},
     'Matcha': {},
-    'Mojito': {}
+    'Mojito': {},
+    'Sandwich': {}
   };
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
@@ -354,7 +227,7 @@
     dataSections[sectionName][name] = 0;
     document.getElementById(inputId).value = '';
     displaySectionItems(sectionName);
-    if (sectionName === 'Mojito') updateTopSellers();
+    if (sectionName === 'Mojito' || sectionName === 'Sandwich') updateTopSellers();
     saveData();
   }
 
@@ -374,7 +247,7 @@
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
       minusBtn.onclick = () => {
-        if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); if (sectionName === 'Mojito') updateTopSellers(); saveData(); }
+        if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); if (sectionName === 'Mojito' || sectionName === 'Sandwich') updateTopSellers(); saveData(); }
       };
 
       const countSpan = document.createElement('span');
@@ -386,7 +259,7 @@
       plusBtn.onclick = () => {
         items[name]++;
         displaySectionItems(sectionName);
-        if (sectionName === 'Mojito') updateTopSellers();
+        if (sectionName === 'Mojito' || sectionName === 'Sandwich') updateTopSellers();
         saveData();
       };
 
@@ -398,7 +271,7 @@
         if (confirm(`Are you sure you want to delete "${name}"?`)) {
           delete dataSections[sectionName][name];
           displaySectionItems(sectionName);
-          if (sectionName === 'Mojito') updateTopSellers();
+          if (sectionName === 'Mojito' || sectionName === 'Sandwich') updateTopSellers();
           saveData();
         }
       };
@@ -426,29 +299,37 @@
   }
 
   function updateTopSellers() {
-    let totalSales = {};
+    let totals = {};
     for (let section in dataSections) {
-      for (const name in dataSections[section]) {
-        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
+      for (let name in dataSections[section]) {
+        totals[name] = (totals[name] || 0) + dataSections[section][name];
       }
     }
     let maxCount = -1;
     let topItem = '';
-    for (const name in totalSales) {
-      if (totalSales[name] > maxCount) {
-        maxCount = totalSales[name];
+    for (let name in totals) {
+      if (totals[name] > maxCount) {
+        maxCount = totals[name];
         topItem = name;
       }
     }
-    const topSellersDiv = document.getElementById('topSellersList');
-    if (topSellersDiv) {
+    const displayDiv = document.getElementById('topSellersList');
+    if (displayDiv) {
       if (maxCount > 0) {
-        topSellersDiv.innerHTML = `Top Seller: <strong>${topItem}</strong> with ${maxCount} sales`;
+        displayDiv.innerHTML = `Top Seller: <strong>${topItem}</strong> with ${maxCount} sales`;
       } else {
-        topSellersDiv.innerHTML = 'No sales yet.';
+        displayDiv.innerHTML = 'No sales yet.';
       }
     }
   }
+
+  window.onload = () => {
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
+    updateTopSellers();
+  };
 </script>
+
 </body>
 </html>
