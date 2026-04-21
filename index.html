@@ -145,7 +145,7 @@
     dataSections[sectionName][name] = 0;
     document.getElementById(inputId).value = '';
     displaySectionItems(sectionName);
-    updateTopSellerDisplay();
+    updateTopSaler();
     saveData();
   }
 
@@ -165,7 +165,7 @@
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateTopSellerDisplay(); saveData(); } };
+      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateTopSaler(); saveData(); } };
 
       const countSpan = document.createElement('span');
       countSpan.className = 'counter';
@@ -173,17 +173,17 @@
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateTopSellerDisplay(); saveData(); };
+      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateTopSaler(); saveData(); };
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'deleteBtn';
       deleteBtn.innerText = 'x';
+      // Updated delete handler with page reload
       deleteBtn.onclick = () => {
         if (confirm(`Delete "${name}"?`)) {
           delete dataSections[sectionName][name];
-          displaySectionItems(sectionName);
-          updateTopSellerDisplay();
           saveData();
+          location.reload(); // Force page reload to update display
         }
       };
 
@@ -205,7 +205,7 @@
         }
         displaySectionItems(section);
       }
-      updateTopSellerDisplay();
+      updateTopSaler();
       saveData();
     }
   }
