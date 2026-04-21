@@ -56,7 +56,14 @@
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
   button:hover { background-color: #45a049; }
-
+  /* Delete button styles */
+  .deleteBtn {
+    background-color: #f44336; /* red */
+    padding: 4px 8px;
+  }
+  .deleteBtn:hover {
+    background-color: #d32f2f;
+  }
   /* Add item input styles */
   .addSection {
     margin-bottom: 15px;
@@ -79,11 +86,14 @@
   // Initialize data storage
   let dataSections = {
     'Juice': {},
+    'Smoothies': {},
     'Milk-Cake': {},
     'Tiramisu': {},
     'Matcha': {},
-    'Mojito': {}
+    'Mojito': {},
+    'Sandwich': {}
   };
+  // Load from localStorage
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
@@ -135,10 +145,22 @@
       plusBtn.innerText = '+';
       plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); saveData(); };
 
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.innerText = 'X';
+      deleteBtn.onclick = () => {
+        if (confirm('Are you sure you want to delete this item?')) {
+          delete dataSections[sectionName][name];
+          displaySectionItems(sectionName);
+          saveData();
+        }
+      };
+
       div.appendChild(n);
       div.appendChild(minusBtn);
       div.appendChild(countSpan);
       div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
       container.appendChild(div);
     }
   }
@@ -194,13 +216,16 @@
 <!-- Navigation menu -->
 <div id="nav">
   <span onclick="showSection('Juice')">Juice</span>
+  <span onclick="showSection('Smoothies')">Smoothies</span>
   <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
+  <span onclick="showSection('Sandwich')">Sandwich</span>
 </div>
 
 <!-- Sections for each category -->
+
 <!-- Juice -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
@@ -210,6 +235,17 @@
   </div>
   <h3>Juice List</h3>
   <div id="itemsContainer_Juice"></div>
+</section>
+
+<!-- Smoothies -->
+<section id="Smoothies">
+  <h2>Add New Smoothie</h2>
+  <div class="addSection">
+    <input type="text" id="smoothieInput" placeholder="Enter smoothie name" />
+    <button onclick="addItem('Smoothies', 'smoothieInput')">Add Smoothie</button>
+  </div>
+  <h3>Smoothie List</h3>
+  <div id="itemsContainer_Smoothies"></div>
 </section>
 
 <!-- Milk-Cake -->
@@ -254,6 +290,17 @@
   </div>
   <h3>Mojito List</h3>
   <div id="itemsContainer_Mojito"></div>
+</section>
+
+<!-- Sandwich -->
+<section id="Sandwich">
+  <h2>Add New Sandwich</h2>
+  <div class="addSection">
+    <input type="text" id="sandwichInput" placeholder="Enter Sandwich name" />
+    <button onclick="addItem('Sandwich', 'sandwichInput')">Add Sandwich</button>
+  </div>
+  <h3>Sandwich List</h3>
+  <div id="itemsContainer_Sandwich"></div>
 </section>
 
 <!-- Sales Summary -->
