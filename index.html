@@ -37,7 +37,6 @@
   }
   #stockBtn { background-color: #2196F3; color: white; }
   #clearBtn { background-color: #f44336; color: white; }
-
   /* Navigation styles */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
@@ -46,14 +45,12 @@
     cursor: pointer; font-weight: bold; color: green; font-size: 18px; padding: 8px 12px; border-radius: 4px; transition: background 0.3s;
   }
   #nav span:hover { background-color: #c8e6c9; }
-
   /* Main content style */
   section {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   section.active { display: block; }
-
   /* Section headers in brown */
   h2 {
     color: brown;
@@ -89,7 +86,7 @@
   .addSection button:hover { background-color: #0b7dda; }
 </style>
 <script>
-  // Initialize data
+  // Initialize data storage
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -133,6 +130,7 @@
   // Display items
   function displayItems(section) {
     const container = document.getElementById('itemsContainer_' + section);
+    if (!container) return;
     container.innerHTML = '';
     for (const name in dataSections[section]) {
       const div = document.createElement('div');
@@ -154,7 +152,6 @@
       plusBtn.innerText = '+';
       plusBtn.onclick = () => { dataSections[section][name]++; displayItems(section); updateSummary(); saveData(); };
 
-      // delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.innerText = 'X';
       deleteBtn.className = 'deleteBtn';
