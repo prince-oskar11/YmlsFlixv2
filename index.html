@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <title>JUIXY - Juice & Dessert</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; }
+  body { font-family: Arial, sans-serif; padding: 20px; position: relative; }
   nav { margin-bottom: 20px; }
   nav span { margin-right: 20px; cursor: pointer; font-weight: bold; color: green; }
   section { display: none; }
@@ -13,23 +13,33 @@
   .itemName { width: 150px; }
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; }
+  #clearBtn {
+    position: absolute; top: 20px; right: 20px;
+    padding: 8px 12px; background-color: red; color: white; border: none; border-radius: 4px; cursor: pointer;
+  }
 </style>
 <script>
-  const juices = {};
-  const desserts = {};
+  // Load data from localStorage if available
+  let juices = JSON.parse(localStorage.getItem('juices')) || {};
+  let desserts = JSON.parse(localStorage.getItem('desserts')) || {};
 
-  function showSection(sectionId) {
-    document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
-    document.getElementById(sectionId).classList.add('active');
+  function saveData() {
+    localStorage.setItem('juices', JSON.stringify(juices));
+    localStorage.setItem('desserts', JSON.stringify(desserts));
   }
 
-  // Juice functions
+  function showSection(id) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
   function addJuice() {
     const name = document.getElementById('juiceName').value.trim();
     if (!name || juices[name]) { alert('Enter a valid and new juice name'); return; }
     juices[name] = 0;
     document.getElementById('juiceName').value = '';
     displayJuice();
+    saveData();
   }
 
   function displayJuice() {
@@ -46,7 +56,7 @@
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
       minusBtn.onclick = () => {
-        if (juices[name] > 0) { juices[name]--; displayJuice(); }
+        if (juices[name] > 0) { juices[name]--; displayJuice(); saveData(); }
       };
 
       const countSpan = document.createElement('span');
@@ -55,7 +65,7 @@
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { juices[name]++; displayJuice(); };
+      plusBtn.onclick = () => { juices[name]++; displayJuice(); saveData(); };
 
       div.appendChild(n);
       div.appendChild(minusBtn);
@@ -65,13 +75,13 @@
     }
   }
 
-  // Dessert functions
   function addDessert() {
     const name = document.getElementById('dessertName').value.trim();
     if (!name || desserts[name]) { alert('Enter a valid and new dessert name'); return; }
     desserts[name] = 0;
     document.getElementById('dessertName').value = '';
     displayDessert();
+    saveData();
   }
 
   function displayDessert() {
@@ -88,7 +98,7 @@
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
       minusBtn.onclick = () => {
-        if (desserts[name] > 0) { desserts[name]--; displayDessert(); }
+        if (desserts[name] > 0) { desserts[name]--; displayDessert(); saveData(); }
       };
 
       const countSpan = document.createElement('span');
@@ -97,13 +107,24 @@
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { desserts[name]++; displayDessert(); };
+      plusBtn.onclick = () => { desserts[name]++; displayDessert(); saveData(); };
 
       div.appendChild(n);
       div.appendChild(minusBtn);
       div.appendChild(countSpan);
       div.appendChild(plusBtn);
       container.appendChild(div);
+    }
+  }
+
+  function resetCounts() {
+    if (confirm('Are you sure you want to reset all counts to zero?')) {
+      for (const name in juices) { juices[name] = 0; }
+      for (const name in desserts) { desserts[name] = 0; }
+      displayJuice();
+      displayDessert();
+      saveData();
+      updateSummary();
     }
   }
 
@@ -124,13 +145,18 @@
   }
 
   window.onload = () => {
-    showSection('juiceSection');
+    displayJuice();
+    displayDessert();
+    updateSummary();
   };
 </script>
 </head>
 <body>
 
 <h1>JUIXY - Juice & Dessert</h1>
+
+<button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
+
 <nav>
   <span onclick="showSection('juiceSection')">Juice</span>
   <span onclick="showSection('dessertSection')">Desserts</span>
@@ -158,7 +184,6 @@
 <div id="summary"></div>
 
 <script>
-  // Toggle sections
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
