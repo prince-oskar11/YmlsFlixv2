@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>JUIXY - Juice Sales Counter</title>
+<title>JUIXY - Juice & Dessert Sales Counter</title>
 <link rel="manifest" href="manifest.json" />
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; }
-  #juiceList { margin-top: 20px; }
-  .juiceItem { display: flex; align-items: center; margin-bottom: 10px; }
-  .juiceName { width: 150px; }
+  section { margin-bottom: 40px; }
+  h2 { margin-top: 30px; }
+  #juiceList, #dessertList { margin-top: 20px; }
+  .item { display: flex; align-items: center; margin-bottom: 10px; }
+  .itemName { width: 150px; }
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; }
 </style>
@@ -19,34 +21,41 @@
     });
   }
 
-  const juices = {}; // Store juice counts
+  const juices = {};   // Store juice counts
+  const desserts = {}; // Store dessert counts
 
+  // Add new juice
   function addJuice() {
-    const nameInput = document.getElementById('newJuiceName');
-    const name = nameInput.value.trim();
-    if (!name) {
-      alert('Please enter a juice name.');
-      return;
-    }
-    if (juices[name]) {
-      alert('Juice already exists.');
-      return;
-    }
+    const name = document.getElementById('newJuiceName').value.trim();
+    if (!name) { alert('Please enter a juice name.'); return; }
+    if (juices[name]) { alert('Juice already exists.'); return; }
     juices[name] = 0;
-    nameInput.value = '';
+    document.getElementById('newJuiceName').value = '';
     displayJuiceList();
     updateSalesSummary();
   }
 
+  // Add new dessert
+  function addDessert() {
+    const name = document.getElementById('newDessertName').value.trim();
+    if (!name) { alert('Please enter a dessert name.'); return; }
+    if (desserts[name]) { alert('Dessert already exists.'); return; }
+    desserts[name] = 0;
+    document.getElementById('newDessertName').value = '';
+    displayDessertList();
+    updateSalesSummary();
+  }
+
+  // Display juice list
   function displayJuiceList() {
     const container = document.getElementById('juiceList');
     container.innerHTML = '';
     for (const name in juices) {
       const div = document.createElement('div');
-      div.className = 'juiceItem';
+      div.className = 'item';
 
       const nameSpan = document.createElement('span');
-      nameSpan.className = 'juiceName';
+      nameSpan.className = 'itemName';
       nameSpan.innerText = name;
 
       const minusBtn = document.createElement('button');
@@ -79,33 +88,100 @@
     }
   }
 
+  // Display dessert list
+  function displayDessertList() {
+    const container = document.getElementById('dessertList');
+    container.innerHTML = '';
+    for (const name in desserts) {
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'itemName';
+      nameSpan.innerText = name;
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => {
+        if (desserts[name] > 0) {
+          desserts[name]--;
+          displayDessertList();
+          updateSalesSummary();
+        }
+      };
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'counter';
+      countSpan.innerText = desserts[name];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => {
+        desserts[name]++;
+        displayDessertList();
+        updateSalesSummary();
+      };
+
+      div.appendChild(nameSpan);
+      div.appendChild(minusBtn);
+      div.appendChild(countSpan);
+      div.appendChild(plusBtn);
+      container.appendChild(div);
+    }
+  }
+
+  // Update sales summary
   function updateSalesSummary() {
     const summaryDiv = document.getElementById('salesSummary');
     summaryDiv.innerHTML = '';
+
+    // Juices
     for (const name in juices) {
       const p = document.createElement('p');
-      p.innerText = `${name}: ${juices[name]} sold`;
+      p.innerText = `Juice - ${name}: ${juices[name]} sold`;
+      summaryDiv.appendChild(p);
+    }
+
+    // Desserts
+    for (const name in desserts) {
+      const p = document.createElement('p');
+      p.innerText = `Dessert - ${name}: ${desserts[name]} sold`;
       summaryDiv.appendChild(p);
     }
   }
 
+  // Initialize display
   window.onload = () => {
     displayJuiceList();
+    displayDessertList();
     updateSalesSummary();
   }
 </script>
 </head>
 <body>
-<h1>JUIXY - Juice Sales Counter</h1>
+<h1>JUIXY - Juice & Dessert Sales Counter</h1>
 
+<!-- Juice Section -->
+<section>
 <h2>Add New Juice</h2>
 <input type="text" id="newJuiceName" placeholder="Enter juice name" />
 <button onclick="addJuice()">Add Juice</button>
-
-<h2>Juice List</h2>
+<h3>Juice List</h3>
 <div id="juiceList"></div>
+</section>
 
+<!-- Dessert Section -->
+<section>
+<h2>Add New Dessert</h2>
+<input type="text" id="newDessertName" placeholder="Enter dessert name" />
+<button onclick="addDessert()">Add Dessert</button>
+<h3>Dessert List</h3>
+<div id="dessertList"></div>
+</section>
+
+<!-- Sales Summary -->
 <h2>Sales Summary</h2>
 <div id="salesSummary"></div>
+
 </body>
 </html>
