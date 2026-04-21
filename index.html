@@ -7,9 +7,8 @@
   body {
     font-family: Arial, sans-serif;
     margin:0; padding:0;
-    background-color: #f5deb3; /* beige background for entire app */
+    background-color: #f5deb3;
   }
-  /* Header styles */
   #header {
     background-color: #f5deb3;
     padding: 20px;
@@ -19,9 +18,8 @@
   #header h1 {
     margin: 0;
     font-size: 36px;
-    color: green; /* in green */
+    color: green;
   }
-  /* Install App button at top-left inside header */
   #installBtn {
     position: absolute;
     top: 10px;
@@ -35,7 +33,6 @@
     cursor: pointer;
   }
   #installBtn:hover { background-color: #45a049; }
-  /* Top buttons (e.g., clear counts) at top-right inside header */
   #topButtons {
     position: absolute;
     top: 20px;
@@ -51,7 +48,6 @@
   }
   #clearBtn { background-color: #f44336; color: white; }
 
-  /* Navigation styles */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
   }
@@ -60,21 +56,17 @@
   }
   #nav span:hover { background-color: #c8e6c9; }
 
-  /* Main pages for categories */
   section {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   section.active { display: block; }
-  /* Header styles for sections */
   h2 {
     color: brown;
     margin-top: 0;
   }
-  /* Items list styles */
   .item { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
   .itemName { flex: 1; font-size: 16px; }
-  /* Buttons for item management */
   .manageButtons button {
     margin: 0 5px;
     padding: 4px 8px;
@@ -86,10 +78,8 @@
     font-weight: bold;
   }
   .manageButtons button:hover { background-color: #45a049; }
-
-  /* Delete button style */
   .deleteBtn {
-    background-color: #f44336; /* red */
+    background-color: #f44336;
     color: white;
     padding: 2px 6px;
     border: none;
@@ -98,8 +88,6 @@
     margin-left: 10px;
     cursor: pointer;
   }
-
-  /* Add item input styles */
   .addSection {
     margin-bottom: 15px;
   }
@@ -113,16 +101,15 @@
 </style>
 </head>
 <body>
-<!-- Header with "JUIXY" and "Install App" button at top-left, and "Clear Counts" at top-right -->
+
 <div id="header">
   <h1 style="margin:0;">JUIXY</h1>
-  <button id="installBtn" onclick="alert('Install app as a shortcut or PWA')">Install App</button>
+  <button id="installBtn" onclick="showSection('TopSaler')">Top Seller</button>
   <div id="topButtons" style="position:absolute; top:20px; right:20px;">
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
 </div>
 
-<!-- Navigation -->
 <div id="nav">
   <span onclick="showSection('Juice')">Juice</span>
   <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
@@ -189,7 +176,7 @@
   <div id="itemsContainer_Sandwich"></div>
 </section>
 
-<!-- Top Seller Page -->
+<!-- Top Seller page -->
 <section id="TopSaler">
   <h2>Top Seller</h2>
   <pre id="topSalerDetails" style="white-space: pre-wrap;"></pre>
@@ -197,7 +184,6 @@
 </section>
 
 <script>
-  // Data storage for categories
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -211,21 +197,18 @@
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
 
-  // Save function
   function saveData() {
     for (let sec in dataSections) {
       localStorage.setItem(sec, JSON.stringify(dataSections[sec]));
     }
   }
 
-  // Show pages
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('#TopSaler').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  // Add item
   function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[section][name]) {
@@ -238,7 +221,6 @@
     saveData();
   }
 
-  // Display items
   function displayItems(section) {
     const container = document.getElementById('itemsContainer_' + section);
     if (!container) return;
@@ -251,7 +233,6 @@
       n.className = 'itemName';
       n.innerText = name;
 
-      // Buttons: minus, plus, delete
       const btnDiv = document.createElement('div');
       btnDiv.className = 'manageButtons';
 
