@@ -209,8 +209,6 @@
   <div id="saleList"></div>
 </section>
 
-<!-- Removed Top Seller section here -->
-
 <!-- Stock Page -->
 <div id="stockPage">
   <div id="stockHeader">
@@ -307,7 +305,7 @@
         if (confirm(`Delete "${name}"?`)) {
           delete dataSections[sectionName][name];
           saveData();
-          location.reload();
+          displaySectionItems(sectionName); // Refresh after delete
         }
       };
 
@@ -439,7 +437,7 @@
     });
   }
 
-  // When page loads
+  // When page loads, display all
   window.onload = () => {
     for (let section in dataSections) {
       displaySectionItems(section);
