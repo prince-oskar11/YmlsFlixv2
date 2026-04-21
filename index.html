@@ -7,23 +7,23 @@
   body {
     font-family: Arial, sans-serif;
     margin:0; padding:0;
-    background-color: #f5deb3; /* beige background */
+    background-color: #f5deb3;
   }
 
   /* Header styles */
   #header {
-    background-color: #4CAF50; /* green background */
+    background-color: #4CAF50;
     padding: 20px;
-    text-align: center;
     position: relative;
+    text-align: center;
   }
   #header h1 {
     margin: 0;
     font-size: 36px;
-    color: green; /* name in green */
+    color: green;
   }
 
-  /* Top buttons container */
+  /* Top buttons */
   #topButtons {
     position: absolute;
     top: 20px;
@@ -40,7 +40,7 @@
   #stockBtn { background-color: #2196F3; color: white; }
   #clearBtn { background-color: #f44336; color: white; }
 
-  /* Navigation styles */
+  /* Navigation */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
   }
@@ -49,20 +49,20 @@
   }
   #nav span:hover { background-color: #c8e6c9; }
 
-  /* Main content style */
+  /* Sections */
   section {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   section.active { display: block; }
 
-  /* Section headers in brown */
+  /* Headers in brown */
   h2 {
     color: brown;
     margin-top: 0;
   }
 
-  /* Items list styles */
+  /* Items list */
   .item { display: flex; align-items: center; margin-bottom: 10px; }
   .itemName { flex: 1; font-size: 16px; }
   .counter { width: 50px; text-align: center; font-weight: bold; }
@@ -73,7 +73,7 @@
   }
   .deleteBtn:hover { background-color: #d32f2f; }
 
-  /* Add item input styles */
+  /* Add section styles */
   .addSection {
     margin-bottom: 15px;
   }
@@ -85,20 +85,15 @@
   }
   .addSection button:hover { background-color: #0b7dda; }
 
-  /* Container for Mojito and Top Sellers side by side */
+  /* Layout for Mojito and Top Seller side by side */
   #mojitoAndTopSellers {
     display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin: 20px auto; max-width: 800px;
   }
-  /* Style for Mojito section */
   #Mojito {
     flex: 1; min-width:250px;
   }
-  /* Style for Top Sellers section */
   #topSellersSection {
     flex: 1; min-width:250px; padding:10px; background:#e0e0e0; border-radius:8px; min-height: 150px;
-  }
-  #topSellersSection h2 {
-    margin-top: 0;
   }
 </style>
 <script>
@@ -110,6 +105,7 @@
     'Matcha': {},
     'Mojito': {}
   };
+  // Load from localStorage
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
@@ -125,7 +121,6 @@
     document.getElementById(id).classList.add('active');
   }
 
-  // Add new item
   function addItem(sectionName, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
@@ -136,7 +131,6 @@
     saveData();
   }
 
-  // Display items
   function displaySectionItems(sectionName) {
     const container = document.getElementById('itemsContainer_' + sectionName);
     if (!container) return;
@@ -152,7 +146,9 @@
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); if (sectionName === 'Mojito') updateTopSellers(); saveData(); } };
+      minusBtn.onclick = () => {
+        if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); if (sectionName === 'Mojito') updateTopSellers(); saveData(); }
+      };
 
       const countSpan = document.createElement('span');
       countSpan.className = 'counter';
@@ -160,7 +156,12 @@
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); if (sectionName === 'Mojito') updateTopSellers(); saveData(); };
+      plusBtn.onclick = () => {
+        items[name]++;
+        displaySectionItems(sectionName);
+        if (sectionName === 'Mojito') updateTopSellers();
+        saveData();
+      };
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'deleteBtn';
@@ -184,7 +185,6 @@
     }
   }
 
-  // Reset all counts
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
       for (let section in dataSections) {
@@ -198,7 +198,6 @@
     }
   }
 
-  // Update Top Seller info
   function updateTopSellers() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -216,7 +215,11 @@
     }
     const topSellersDiv = document.getElementById('topSellersList');
     if (topSellersDiv) {
-      topSellersDiv.innerHTML = `Top Seller: <strong>${topItem}</strong> with ${maxCount} sales`;
+      if (maxCount > 0) {
+        topSellersDiv.innerHTML = `Top Seller: <strong>${topItem}</strong> with ${maxCount} sales`;
+      } else {
+        topSellersDiv.innerHTML = 'No sales yet.';
+      }
     }
   }
 
@@ -246,7 +249,7 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
-  <span onclick="showSection('Top Sellers')">Top Sellers</span>
+  <span onclick="showSection('TopSellers')">Top Sellers</span>
 </div>
 
 <!-- Sections -->
@@ -294,8 +297,10 @@
   <div id="itemsContainer_Matcha"></div>
 </section>
 
-<!-- Mojito -->
-  <section id="Mojito">
+<!-- Mojito and Top Seller side by side -->
+<div id="mojitoAndTopSellers" style="margin:20px auto; max-width:800px; display:flex; flex-wrap:wrap;">
+  <!-- Mojito -->
+  <section id="Mojito" style="flex:1; min-width:250px;">
     <h2>Add New Mojito</h2>
     <div class="addSection">
       <input type="text" id="mojitoInput" placeholder="Enter Mojito name" />
@@ -311,5 +316,139 @@
   </section>
 </div>
 
+<script>
+  // Load data and initialize top seller display
+  window.onload = () => {
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
+    updateTopSellers();
+  };
+
+  // Functions from previous code snippet:
+  let dataSections = {
+    'Juice': {},
+    'Milk-Cake': {},
+    'Tiramisu': {},
+    'Matcha': {},
+    'Mojito': {}
+  };
+  for (let key in dataSections) {
+    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
+  }
+
+  function saveData() {
+    for (let section in dataSections) {
+      localStorage.setItem(section, JSON.stringify(dataSections[section]));
+    }
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function addItem(sectionName, inputId) {
+    const name = document.getElementById(inputId).value.trim();
+    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
+    dataSections[sectionName][name] = 0;
+    document.getElementById(inputId).value = '';
+    displaySectionItems(sectionName);
+    if (sectionName === 'Mojito') updateTopSellers();
+    saveData();
+  }
+
+  function displaySectionItems(sectionName) {
+    const container = document.getElementById('itemsContainer_' + sectionName);
+    if (!container) return;
+    container.innerHTML = '';
+    const items = dataSections[sectionName];
+    for (const name in items) {
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const n = document.createElement('span');
+      n.className = 'itemName';
+      n.innerText = name;
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => {
+        if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); if (sectionName === 'Mojito') updateTopSellers(); saveData(); }
+      };
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'counter';
+      countSpan.innerText = items[name];
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => {
+        items[name]++;
+        displaySectionItems(sectionName);
+        if (sectionName === 'Mojito') updateTopSellers();
+        saveData();
+      };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.innerText = 'X';
+      deleteBtn.title = 'Delete Item';
+      deleteBtn.onclick = () => {
+        if (confirm(`Are you sure you want to delete "${name}"?`)) {
+          delete dataSections[sectionName][name];
+          displaySectionItems(sectionName);
+          if (sectionName === 'Mojito') updateTopSellers();
+          saveData();
+        }
+      };
+
+      div.appendChild(n);
+      div.appendChild(minusBtn);
+      div.appendChild(countSpan);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      container.appendChild(div);
+    }
+  }
+
+  function resetCounts() {
+    if (confirm('Are you sure you want to reset all counts to zero?')) {
+      for (let section in dataSections) {
+        for (let item in dataSections[section]) {
+          dataSections[section][item] = 0;
+        }
+        displaySectionItems(section);
+      }
+      updateTopSellers();
+      saveData();
+    }
+  }
+
+  function updateTopSellers() {
+    let totalSales = {};
+    for (let section in dataSections) {
+      for (const name in dataSections[section]) {
+        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
+      }
+    }
+    let maxCount = -1;
+    let topItem = '';
+    for (const name in totalSales) {
+      if (totalSales[name] > maxCount) {
+        maxCount = totalSales[name];
+        topItem = name;
+      }
+    }
+    const topSellersDiv = document.getElementById('topSellersList');
+    if (topSellersDiv) {
+      if (maxCount > 0) {
+        topSellersDiv.innerHTML = `Top Seller: <strong>${topItem}</strong> with ${maxCount} sales`;
+      } else {
+        topSellersDiv.innerHTML = 'No sales yet.';
+      }
+    }
+  }
+</script>
 </body>
 </html>
