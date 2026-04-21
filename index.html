@@ -81,18 +81,33 @@
   }
   .addSection button:hover { background-color: #0b7dda; }
 
-  /* Sales summary styles */
-  #summary {
+  /* Stock page styles */
+  #stockPage {
+    display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
-  #summary h2 { margin-top: 0; cursor:pointer; }
-  /* Top salers list */
-  #topSaler {
-    margin-top: 20px;
+  #stockPage.active { display: block; }
+
+  #stockHeader {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
   }
+  #stockHeader h2 { margin: 0; }
+  #closeStockBtn {
+    padding: 8px 12px; border: none; border-radius: 4px; background-color: #f44336; color: white; cursor: pointer;
+  }
+  #closeStockBtn:hover { background-color: #d32f2f; }
+
+  /* Stock items list */
+  #stockItems {
+    margin-top: 10px;
+  }
+  .stockItem {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: #e0e0e0; border-radius: 4px;
+  }
+  .stockItem span { flex: 1; }
 </style>
 <script>
-  // Initialize data storage
+  // Initialize data storage for main categories
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -104,18 +119,26 @@
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
 
+  // Initialize stock data
+  let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
+
   function saveData() {
     for (let section in dataSections) {
       localStorage.setItem(section, JSON.stringify(dataSections[section]));
     }
+    localStorage.setItem('Stock', JSON.stringify(stockItems));
   }
 
   function showSection(id) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('section, #stockPage').forEach(s => s.classList.remove('active'));
+    if (id === 'Stock') {
+      document.getElementById('stockPage').classList.add('active');
+    } else {
+      document.getElementById(id).classList.add('active');
+    }
   }
 
-  // Add new item to section
+  // Add new item to main sections
   function addItem(sectionName, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
@@ -126,7 +149,7 @@
     saveData();
   }
 
-  // Display items in section
+  // Display items in main sections
   function displaySectionItems(sectionName) {
     const container = document.getElementById('itemsContainer_' + sectionName);
     if (!container) return;
@@ -174,20 +197,12 @@
     }
   }
 
-  // Update summary view
+  // Update summary view (not used now)
   function updateSummary() {
-    const summaryDiv = document.getElementById('summary');
-    summaryDiv.innerHTML = '';
-    for (let section in dataSections) {
-      for (const name in dataSections[section]) {
-        const p = document.createElement('p');
-        p.innerText = `${section} - ${name}: ${dataSections[section][name]} sold`;
-        summaryDiv.appendChild(p);
-      }
-    }
+    // No implementation
   }
 
-  // Show the "Top Seller" page
+  // Show Top Seller
   function showTopSaler() {
     let totalSales = {};
     for (let section in dataSections) {
@@ -195,7 +210,6 @@
         totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
       }
     }
-    // Find top seller
     let maxCount = -1;
     let topItem = '';
     for (const name in totalSales) {
@@ -207,13 +221,60 @@
     alert(`Top Seller: ${topItem} with ${maxCount} sales`);
   }
 
-  // When page loads
+  // Load data on page load
   window.onload = () => {
     for (let section in dataSections) {
       displaySectionItems(section);
     }
     updateSummary();
+    displayStock();
   };
+
+  // Stock page functions
+  function displayStock() {
+    const container = document.getElementById('stockItems');
+    container.innerHTML = '';
+    for (const item in stockItems) {
+      const div = document.createElement('div');
+      div.className = 'stockItem';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.innerText = item;
+
+      const controlsDiv = document.createElement('div');
+
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      minusBtn.onclick = () => { if (stockItems[item] > 0) { stockItems[item]--; saveData(); displayStock(); } };
+
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      plusBtn.onclick = () => { stockItems[item]++; saveData(); displayStock(); };
+
+      const xBtn = document.createElement('button');
+      xBtn.innerText = 'x';
+      xBtn.onclick = () => { delete stockItems[item]; saveData(); displayStock(); };
+
+      controlsDiv.appendChild(minusBtn);
+      controlsDiv.appendChild(plusBtn);
+      controlsDiv.appendChild(xBtn);
+
+      div.appendChild(nameSpan);
+      div.appendChild(controlsDiv);
+
+      container.appendChild(div);
+    }
+  }
+
+  function addStockItem() {
+    const input = document.getElementById('stockInput');
+    const name = input.value.trim();
+    if (!name || stockItems[name]) { alert('Enter a valid and new stock item'); return; }
+    stockItems[name] = 0;
+    input.value = '';
+    displayStock();
+    saveData();
+  }
 </script>
 </head>
 <body>
@@ -222,7 +283,7 @@
 <div id="header">
   <h1 style="margin:0; color:green;">JUIXY</h1>
   <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
-    <button id="stockBtn" onclick="alert('Stock management not implemented')">Stock</button>
+    <button id="stockBtn" onclick="showSection('Stock')">Stock</button>
     <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
   </div>
 </div>
@@ -234,10 +295,9 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
-  <span onclick="showTopSaler()">Sales Summary</span>
 </div>
 
-<!-- Sections for each category -->
+<!-- Main sections for categories -->
 <!-- Juice -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
@@ -293,10 +353,18 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
-<!-- Sales summary page (hidden, activated by menu) -->
-<!-- Instead, we use alert for top seller; if you want a dedicated page, can be added -->
-<h2>Sales Summary</h2>
-<div id="summary"></div>
+<!-- Stock Page -->
+<div id="stockPage">
+  <div id="stockHeader">
+    <h2>Stock Management</h2>
+    <button id="closeStockBtn" onclick="showSection('')">Close</button>
+  </div>
+  <div>
+    <input type="text" id="stockInput" placeholder="New stock item" />
+    <button onclick="addStockItem()">Add Stock Item</button>
+  </div>
+  <div id="stockItems"></div>
+</div>
 
 </body>
 </html>
