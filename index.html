@@ -3,29 +3,26 @@
 <head>
 <meta charset="UTF-8" />
 <title>JUIXY - Juice & Dessert App</title>
-<!-- Manifest for PWA -->
+<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json" />
 <style>
   body {
     font-family: Arial, sans-serif;
     margin:0; padding:0;
-    background-color: #f5deb3; /* beige background */
+    background-color: #f5deb3;
   }
 
-  /* Header styles */
   #header {
-    background-color: #4CAF50; /* green background */
+    background-color: #4CAF50;
     padding: 20px;
-    text-align: center;
     position: relative;
   }
   #header h1 {
     margin: 0;
     font-size: 36px;
-    color: green; /* name in green */
+    color: green;
   }
 
-  /* Top buttons container */
   #topButtons {
     position: absolute;
     top: 20px;
@@ -36,13 +33,12 @@
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
+    cursor:pointer;
     font-weight: bold;
   }
   #stockBtn { background-color: #2196F3; color: white; }
   #clearBtn { background-color: #f44336; color: white; }
 
-  /* Navigation styles */
   #nav {
     display: flex; justify-content: center; gap: 15px; margin-top: 10px; background:#e0e0e0; padding:10px 0;
   }
@@ -51,27 +47,23 @@
   }
   #nav span:hover { background-color: #c8e6c9; }
 
-  /* Main content style */
   section {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
   section.active { display: block; }
 
-  /* Section header titles in brown */
   h2 {
     color: brown;
     margin-top: 0;
   }
 
-  /* Items list styles */
   .item { display: flex; align-items: center; margin-bottom: 10px; }
   .itemName { flex: 1; font-size: 16px; }
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; padding: 4px 8px; border: none; border-radius: 4px; cursor:pointer; background-color: #4CAF50; color: white; font-weight: bold; }
   button:hover { background-color: #45a049; }
 
-  /* Add item input styles */
   .addSection {
     margin-bottom: 15px;
   }
@@ -83,7 +75,6 @@
   }
   .addSection button:hover { background-color: #0b7dda; }
 
-  /* Stock page styles */
   #stockPage {
     display: none;
     max-width: 800px; margin:20px auto; background: #fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
@@ -99,7 +90,6 @@
   }
   #closeStockBtn:hover { background-color: #d32f2f; }
 
-  /* Stock items list */
   #stockItems {
     margin-top: 10px;
   }
@@ -108,122 +98,20 @@
   }
   .stockItem span { flex: 1; }
 
-  /* Install app button styles */
   #installBtn {
-    margin-top: 10px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    background-color: #4CAF50;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
+    margin-top:10px;
+    padding:8px 12px;
+    border:none;
+    border-radius:4px;
+    background-color:#4CAF50;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
   }
   #installBtn:hover {
-    background-color: #45a049;
+    background-color:#45a049;
   }
 </style>
-</head>
-<body>
-
-<!-- Header -->
-<div id="header">
-  <h1 style="margin:0; color:green;">JUIXY</h1>
-  <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
-    <button id="stockBtn" onclick="showSection('Stock')">Stock</button>
-    <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
-  </div>
-</div>
-
-<!-- Navigation -->
-<div id="nav">
-  <span onclick="showSection('Juice')">Juice</span>
-  <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
-  <span onclick="showSection('Tiramisu')">Tiramisu</span>
-  <span onclick="showSection('Matcha')">Matcha</span>
-  <span onclick="showSection('Mojito')">Mojito</span>
-  <span onclick="showTopSaler()">Top Seller</span>
-</div>
-
-<!-- Sections -->
-<!-- Juice -->
-<section id="Juice" class="active">
-  <h2>Add New Juice</h2>
-  <div class="addSection">
-    <input type="text" id="juiceInput" placeholder="Enter juice name" />
-    <button onclick="addItem('Juice', 'juiceInput')">Add Juice</button>
-  </div>
-  <h3>Juice List</h3>
-  <div id="itemsContainer_Juice"></div>
-</section>
-
-<!-- Milk-Cake -->
-<section id="Milk-Cake">
-  <h2>Add New Milk-Cake</h2>
-  <div class="addSection">
-    <input type="text" id="milkCakeInput" placeholder="Enter Milk-Cake name" />
-    <button onclick="addItem('Milk-Cake', 'milkCakeInput')">Add Milk-Cake</button>
-  </div>
-  <h3>Milk-Cake List</h3>
-  <div id="itemsContainer_Milk-Cake"></div>
-</section>
-
-<!-- Tiramisu -->
-<section id="Tiramisu">
-  <h2>Add New Tiramisu</h2>
-  <div class="addSection">
-    <input type="text" id="tiramisuInput" placeholder="Enter Tiramisu name" />
-    <button onclick="addItem('Tiramisu', 'tiramisuInput')">Add Tiramisu</button>
-  </div>
-  <h3>Tiramisu List</h3>
-  <div id="itemsContainer_Tiramisu"></div>
-</section>
-
-<!-- Matcha -->
-<section id="Matcha">
-  <h2>Add New Matcha</h2>
-  <div class="addSection">
-    <input type="text" id="matchaInput" placeholder="Enter Matcha name" />
-    <button onclick="addItem('Matcha', 'matchaInput')">Add Matcha</button>
-  </div>
-  <h3>Matcha List</h3>
-  <div id="itemsContainer_Matcha"></div>
-</section>
-
-<!-- Mojito -->
-<section id="Mojito">
-  <h2>Add New Mojito</h2>
-  <div class="addSection">
-    <input type="text" id="mojitoInput" placeholder="Enter Mojito name" />
-    <button onclick="addItem('Mojito', 'mojitoInput')">Add Mojito</button>
-  </div>
-  <h3>Mojito List</h3>
-  <div id="itemsContainer_Mojito"></div>
-</section>
-
-<!-- Top Seller & Install Button -->
-<div id="TopSeller" style="display:flex; justify-content:space-around; align-items:center; margin-top:20px;">
-  <div style="background:#f0f0f0; padding:10px; border-radius:8px; width:200px; display:flex; flex-direction:column; align-items:center;">
-    <h3>Top Seller</h3>
-    <p id="topSellerText">Calculating...</p>
-    <button onclick="showTopSaler()">Show Top Seller</button>
-  </div>
-  <button id="installBtn" style="margin-top:10px; display:none;" onclick="promptInstall()">Install App</button>
-</div>
-
-<!-- Stock Management Page -->
-<div id="stockPage">
-  <div id="stockHeader" style="display:flex; justify-content:space-between; align-items:center;">
-    <h2>Stock Management</h2>
-    <button id="closeStockBtn" onclick="showSection('')">Close</button>
-  </div>
-  <div>
-    <input type="text" id="stockInput" placeholder="New stock item" />
-    <button onclick="addStockItem()">Add Stock Item</button>
-  </div>
-  <div id="stockItems"></div>
-</div>
-
 <script>
   // Data initialization
   let dataSections = {
@@ -238,7 +126,7 @@
   }
   let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
 
-  // Save data
+  // Save all data
   function saveData() {
     for (let section in dataSections) {
       localStorage.setItem(section, JSON.stringify(dataSections[section]));
@@ -249,60 +137,55 @@
   // Show sections
   function showSection(id) {
     document.querySelectorAll('section, #stockPage').forEach(s => s.classList.remove('active'));
-    if (id === 'Stock') {
+    if (id==='') return;
+    if (id==='Stock') {
       document.getElementById('stockPage').classList.add('active');
     } else {
       document.getElementById(id).classList.add('active');
     }
   }
 
-  // Add item to main categories
+  // Add item
   function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
     if (!name || dataSections[section][name]) { alert('Invalid or duplicate name'); return; }
-    dataSections[section][name] = 0;
-    document.getElementById(inputId).value = '';
+    dataSections[section][name]=0;
+    document.getElementById(inputId).value='';
     displaySectionItems(section);
     updateTopSaler();
     saveData();
   }
 
-  // Display main category items
+  // Display items with delete button
   function displaySectionItems(section) {
-    const container = document.getElementById('itemsContainer_' + section);
-    container.innerHTML = '';
+    const container = document.getElementById('itemsContainer_'+section);
+    if (!container) return;
+    container.innerHTML='';
     const items = dataSections[section];
     for (const name in items) {
-      const div = document.createElement('div');
-      div.className = 'item';
+      const div=document.createElement('div');
+      div.className='item';
 
-      const n = document.createElement('span');
-      n.className = 'itemName';
-      n.innerText = name;
+      const n=document.createElement('span');
+      n.className='itemName';
+      n.innerText=name;
 
-      const minusBtn = document.createElement('button');
-      minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (items[name]>0){ items[name]--; displaySectionItems(section); updateTopSaler(); saveData(); } };
+      const minusBtn=document.createElement('button');
+      minusBtn.innerText='-';
+      minusBtn.onclick=()=>{ if (items[name]>0){ items[name]--; displaySectionItems(section); updateTopSaler(); saveData(); } };
 
-      const countSpan = document.createElement('span');
-      countSpan.className = 'counter';
-      countSpan.innerText = items[name];
+      const countSpan=document.createElement('span');
+      countSpan.className='counter';
+      countSpan.innerText=items[name];
 
-      const plusBtn = document.createElement('button');
-      plusBtn.innerText = '+';
-      plusBtn.onclick = () => { items[name]++; displaySectionItems(section); updateTopSaler(); saveData(); };
+      const plusBtn=document.createElement('button');
+      plusBtn.innerText='+';
+      plusBtn.onclick=()=>{ items[name]++; displaySectionItems(section); updateTopSaler(); saveData(); };
 
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'deleteBtn';
-      deleteBtn.innerText = 'x';
-      deleteBtn.onclick = () => {
-        if (confirm(`Delete "${name}"?`)) {
-          delete dataSections[section][name];
-          displaySectionItems(section);
-          updateTopSaler();
-          saveData();
-        }
-      };
+      const deleteBtn=document.createElement('button');
+      deleteBtn.className='deleteBtn';
+      deleteBtn.innerText='x';
+      deleteBtn.onclick=()=>{ if (confirm(`Delete "${name}"?`)){ delete dataSections[section][name]; displaySectionItems(section); updateTopSaler(); saveData(); } }; 
 
       div.appendChild(n);
       div.appendChild(minusBtn);
@@ -313,7 +196,6 @@
     }
   }
 
-  // Reset counts
   function resetCounts() {
     if (confirm('Reset all counts?')) {
       for (let s in dataSections) {
@@ -327,7 +209,6 @@
     }
   }
 
-  // Update Top Seller
   function updateTopSaler() {
     let totalSales = {};
     for (let s in dataSections) {
@@ -368,11 +249,299 @@
 
       const xBtn=document.createElement('button');
       xBtn.innerText='x';
-      xBtn.onclick=()=>{
-        if (confirm(`Delete stock item "${item}"?`)){
-          delete stockItems[item]; saveData(); displayStock();
+      xBtn.onclick=()=>{ if (confirm(`Delete stock item "${item}"?`)){ delete stockItems[item]; saveData(); displayStock(); } };
+
+      controlsDiv.appendChild(minusBtn);
+      controlsDiv.appendChild(plusBtn);
+      controlsDiv.appendChild(xBtn);
+
+      div.appendChild(nameSpan);
+      div.appendChild(controlsDiv);
+      container.appendChild(div);
+    }
+  }
+
+  function addStockItem() {
+    const input=document.getElementById('stockInput');
+    const name=input.value.trim();
+    if (!name || stockItems[name]) { alert('Invalid or duplicate stock item'); return; }
+    stockItems[name]=0;
+    input.value='';
+    displayStock();
+    saveData();
+  }
+
+  // PWA Install prompt
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt=e;
+    document.getElementById('installBtn').style.display='block';
+  });
+  function promptInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('installBtn').style.display='none'; });
+    } else {
+      alert('Install prompt not available');
+    }
+  }
+
+  // Show functions
+  function showSection(id) {
+    document.querySelectorAll('section, #stockPage').forEach(s=>s.classList.remove('active'));
+    if (id==='') return;
+    if (id==='Stock') { document.getElementById('stockPage').classList.add('active'); }
+    else { document.getElementById(id).classList.add('active'); }
+  }
+
+  function showTopSaler() {
+    updateTopSaler();
+  }
+
+  // Load data on page load
+  window.onload=()=>{
+    for (let s in dataSections) { displaySectionItems(s); }
+    displayStock();
+    updateTopSaler();
+  };
+</script>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <h1 style="margin:0; color:green;">JUIXY</h1>
+  <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
+    <button id="stockBtn" onclick="showSection('Stock')">Stock</button>
+    <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div id="nav">
+  <span onclick="showSection('Juice')">Juice</span>
+  <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
+  <span onclick="showSection('Tiramisu')">Tiramisu</span>
+  <span onclick="showSection('Matcha')">Matcha</span>
+  <span onclick="showSection('Mojito')">Mojito</span>
+  <span onclick="showTopSaler()">Top Seller</span>
+</div>
+
+<!-- Sections -->
+<!-- Juice -->
+<section id="Juice" class="active">
+  <h2>Add New Juice</h2>
+  <div class="addSection">
+    <input type="text" id="juiceInput" placeholder="Enter juice name" />
+    <button onclick="addItem('Juice', 'juiceInput')">Add Juice</button>
+  </div>
+  <h3>Juice List</h3>
+  <div id="itemsContainer_Juice"></div>
+</section>
+<!-- Milk-Cake -->
+<section id="Milk-Cake">
+  <h2>Add New Milk-Cake</h2>
+  <div class="addSection">
+    <input type="text" id="milkCakeInput" placeholder="Enter Milk-Cake name" />
+    <button onclick="addItem('Milk-Cake', 'milkCakeInput')">Add Milk-Cake</button>
+  </div>
+  <h3>Milk-Cake List</h3>
+  <div id="itemsContainer_Milk-Cake"></div>
+</section>
+<!-- Tiramisu -->
+<section id="Tiramisu">
+  <h2>Add New Tiramisu</h2>
+  <div class="addSection">
+    <input type="text" id="tiramisuInput" placeholder="Enter Tiramisu name" />
+    <button onclick="addItem('Tiramisu', 'tiramisuInput')">Add Tiramisu</button>
+  </div>
+  <h3>Tiramisu List</h3>
+  <div id="itemsContainer_Tiramisu"></div>
+</section>
+<!-- Matcha -->
+<section id="Matcha">
+  <h2>Add New Matcha</h2>
+  <div class="addSection">
+    <input type="text" id="matchaInput" placeholder="Enter Matcha name" />
+    <button onclick="addItem('Matcha', 'matchaInput')">Add Matcha</button>
+  </div>
+  <h3>Matcha List</h3>
+  <div id="itemsContainer_Matcha"></div>
+</section>
+<!-- Mojito -->
+<section id="Mojito">
+  <h2>Add New Mojito</h2>
+  <div class="addSection">
+    <input type="text" id="mojitoInput" placeholder="Enter Mojito name" />
+    <button onclick="addItem('Mojito', 'mojitoInput')">Add Mojito</button>
+  </div>
+  <h3>Mojito List</h3>
+  <div id="itemsContainer_Mojito"></div>
+</section>
+
+<!-- Top Seller & Install Button -->
+<div id="TopSeller" style="display:flex; justify-content:space-around; align-items:center; margin-top:20px;">
+  <div style="background:#f0f0f0; padding:10px; border-radius:8px; width:200px; display:flex; flex-direction:column; align-items:center;">
+    <h3>Top Seller</h3>
+    <p id="topSellerText">Calculating...</p>
+    <button onclick="showTopSaler()">Show Top Seller</button>
+  </div>
+  <button id="installBtn" style="margin-top:10px; display:none;" onclick="promptInstall()">Install App</button>
+</div>
+
+<!-- Stock Management Page -->
+<div id="stockPage">
+  <div id="stockHeader" style="display:flex; justify-content:space-between; align-items:center;">
+    <h2>Stock Management</h2>
+    <button id="closeStockBtn" onclick="showSection('')">Close</button>
+  </div>
+  <div>
+    <input type="text" id="stockInput" placeholder="New stock item" />
+    <button onclick="addStockItem()">Add Stock Item</button>
+  </div>
+  <div id="stockItems"></div>
+</div>
+
+<script>
+  // Data storage
+  let dataSections = {
+    'Juice': {},
+    'Milk-Cake': {},
+    'Tiramisu': {},
+    'Matcha': {},
+    'Mojito': {}
+  };
+  for (let key in dataSections) {
+    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
+  }
+  let stockItems = JSON.parse(localStorage.getItem('Stock')) || {};
+
+  // Save all data
+  function saveData() {
+    for (let section in dataSections) {
+      localStorage.setItem(section, JSON.stringify(dataSections[section]));
+    }
+    localStorage.setItem('Stock', JSON.stringify(stockItems));
+  }
+
+  // Show sections
+  function showSection(id) {
+    document.querySelectorAll('section, #stockPage').forEach(s => s.classList.remove('active'));
+    if (id==='') return;
+    if (id==='Stock') {
+      document.getElementById('stockPage').classList.add('active');
+    } else {
+      document.getElementById(id).classList.add('active');
+    }
+  }
+
+  // Add item
+  function addItem(section, inputId) {
+    const name = document.getElementById(inputId).value.trim();
+    if (!name || dataSections[section][name]) { alert('Invalid or duplicate name'); return; }
+    dataSections[section][name]=0;
+    document.getElementById(inputId).value='';
+    displaySectionItems(section);
+    updateTopSaler();
+    saveData();
+  }
+
+  // Display items
+  function displaySectionItems(section) {
+    const container = document.getElementById('itemsContainer_'+section);
+    if (!container) return;
+    container.innerHTML='';
+    const items = dataSections[section];
+    for (const name in items) {
+      const div=document.createElement('div');
+      div.className='item';
+
+      const n=document.createElement('span');
+      n.className='itemName';
+      n.innerText=name;
+
+      const minusBtn=document.createElement('button');
+      minusBtn.innerText='-';
+      minusBtn.onclick=()=>{ if (items[name]>0){ items[name]--; displaySectionItems(section); updateTopSaler(); saveData(); } };
+
+      const countSpan=document.createElement('span');
+      countSpan.className='counter';
+      countSpan.innerText=items[name];
+
+      const plusBtn=document.createElement('button');
+      plusBtn.innerText='+';
+      plusBtn.onclick=()=>{ items[name]++; displaySectionItems(section); updateTopSaler(); saveData(); };
+
+      const deleteBtn=document.createElement('button');
+      deleteBtn.className='deleteBtn';
+      deleteBtn.innerText='x';
+      deleteBtn.onclick=()=>{ if (confirm(`Delete "${name}"?`)){ delete dataSections[section][name]; displaySectionItems(section); updateTopSaler(); saveData(); } }; 
+
+      div.appendChild(n);
+      div.appendChild(minusBtn);
+      div.appendChild(countSpan);
+      div.appendChild(plusBtn);
+      div.appendChild(deleteBtn);
+      container.appendChild(div);
+    }
+  }
+
+  // Reset counts
+  function resetCounts() {
+    if (confirm('Reset all counts?')) {
+      for (let s in dataSections) {
+        for (let n in dataSections[s]) {
+          dataSections[s][n]=0;
         }
-      };
+        displaySectionItems(s);
+      }
+      updateTopSaler();
+      saveData();
+    }
+  }
+
+  function updateTopSaler() {
+    let totalSales = {};
+    for (let s in dataSections) {
+      for (const n in dataSections[s]) {
+        totalSales[n] = (totalSales[n] || 0) + dataSections[s][n];
+      }
+    }
+    let maxCount=-1; let topItem='';
+    for (const n in totalSales) {
+      if (totalSales[n]>maxCount) { maxCount=totalSales[n]; topItem=n; }
+    }
+    document.getElementById('topSellerText').innerText= topItem ? `${topItem} (${maxCount} sales)` : 'No sales yet';
+  }
+
+  // Stock functions
+  function displayStock() {
+    const container=document.getElementById('stockItems');
+    container.innerHTML='';
+    for (const item in stockItems) {
+      const div=document.createElement('div');
+      div.className='stockItem';
+
+      const nameSpan=document.createElement('span');
+      nameSpan.innerText= item;
+
+      const controlsDiv=document.createElement('div');
+
+      const minusBtn=document.createElement('button');
+      minusBtn.innerText='-';
+      minusBtn.onclick=()=>{ if (stockItems[item]>0){ stockItems[item]--; saveData(); displayStock(); } };
+
+      const countSpan=document.createElement('span');
+      countSpan.innerText= stockItems[item];
+
+      const plusBtn=document.createElement('button');
+      plusBtn.innerText='+';
+      plusBtn.onclick=()=>{ stockItems[item]++; saveData(); displayStock(); };
+
+      const xBtn=document.createElement('button');
+      xBtn.innerText='x';
+      xBtn.onclick=()=>{ if (confirm(`Delete stock item "${item}"?`)){ delete stockItems[item]; saveData(); displayStock(); } };
 
       controlsDiv.appendChild(minusBtn);
       controlsDiv.appendChild(plusBtn);
@@ -413,7 +582,6 @@
   // Show functions
   function showSection(id) {
     document.querySelectorAll('section, #stockPage').forEach(s=>s.classList.remove('active'));
-    if (id==='') return;
     if (id==='') { document.getElementById('stockPage').classList.remove('active'); }
     else if (id==='Stock') { document.getElementById('stockPage').classList.add('active'); }
     else { document.getElementById(id).classList.add('active'); }
@@ -423,7 +591,7 @@
     updateTopSaler();
   }
 
-  // Load data on page load
+  // Load data
   window.onload=()=>{
     for (let s in dataSections) { displaySectionItems(s); }
     displayStock();
