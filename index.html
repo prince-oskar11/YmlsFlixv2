@@ -2,30 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>JUIXY - Juice & Dessert</title>
+<title>JUIXY</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; position: relative; }
-  nav { margin-bottom: 20px; }
-  nav span { margin-right: 20px; cursor: pointer; font-weight: bold; color: green; }
+  body { font-family: Arial, sans-serif; padding: 20px; margin:0; position: relative; }
+  #topBar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  #nav {
+    display: flex; gap: 15px;
+  }
+  #nav span { cursor: pointer; font-weight: bold; color: green; }
+  #buttonsLeft {
+    display: flex; gap: 10px;
+  }
+  #clearBtn, #stockBtn {
+    padding: 8px 12px; border: none; border-radius: 4px; cursor:pointer;
+  }
+  #clearBtn { background-color: red; color: white; }
+  #stockBtn { background-color: blue; color: white; }
   section { display: none; }
   section.active { display: block; }
   .item { display: flex; align-items: center; margin-bottom: 10px; }
   .itemName { width: 150px; }
   .counter { width: 50px; text-align: center; font-weight: bold; }
   button { margin: 0 5px; }
-  #clearBtn {
-    position: absolute; top: 20px; right: 20px;
-    padding: 8px 12px; background-color: red; color: white; border: none; border-radius: 4px; cursor: pointer;
-  }
 </style>
 <script>
   // Load data from localStorage if available
-  let juices = JSON.parse(localStorage.getItem('juices')) || {};
-  let desserts = JSON.parse(localStorage.getItem('desserts')) || {};
+  let dataSections = {
+    'Juice': {},
+    'Milk-Cake': {},
+    'Tiramisu': {},
+    'Matcha': {},
+    'Mojito': {}
+  };
+  for (let key in dataSections) {
+    dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
+  }
 
   function saveData() {
-    localStorage.setItem('juices', JSON.stringify(juices));
-    localStorage.setItem('desserts', JSON.stringify(desserts));
+    for (let section in dataSections) {
+      localStorage.setItem(section, JSON.stringify(dataSections[section]));
+    }
   }
 
   function showSection(id) {
@@ -33,19 +52,23 @@
     document.getElementById(id).classList.add('active');
   }
 
-  function addJuice() {
-    const name = document.getElementById('juiceName').value.trim();
-    if (!name || juices[name]) { alert('Enter a valid and new juice name'); return; }
-    juices[name] = 0;
-    document.getElementById('juiceName').value = '';
-    displayJuice();
+  // Generic functions for adding items
+  function addItem(sectionName, inputId) {
+    const name = document.getElementById(inputId).value.trim();
+    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
+    dataSections[sectionName][name] = 0;
+    document.getElementById(inputId).value = '';
+    displaySectionItems(sectionName);
     saveData();
   }
 
-  function displayJuice() {
-    const container = document.getElementById('juiceItems');
+  // Display section items
+  function displaySectionItems(sectionName) {
+    const container = document.getElementById('itemsContainer_' + sectionName);
+    if (!container) return;
     container.innerHTML = '';
-    for (const name in juices) {
+    const items = dataSections[sectionName];
+    for (const name in items) {
       const div = document.createElement('div');
       div.className = 'item';
 
@@ -55,17 +78,15 @@
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
-      minusBtn.onclick = () => {
-        if (juices[name] > 0) { juices[name]--; displayJuice(); saveData(); }
-      };
+      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); saveData(); } };
 
       const countSpan = document.createElement('span');
       countSpan.className = 'counter';
-      countSpan.innerText = juices[name];
+      countSpan.innerText = items[name];
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { juices[name]++; displayJuice(); saveData(); };
+      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); saveData(); };
 
       div.appendChild(n);
       div.appendChild(minusBtn);
@@ -75,115 +96,108 @@
     }
   }
 
-  function addDessert() {
-    const name = document.getElementById('dessertName').value.trim();
-    if (!name || desserts[name]) { alert('Enter a valid and new dessert name'); return; }
-    desserts[name] = 0;
-    document.getElementById('dessertName').value = '';
-    displayDessert();
-    saveData();
-  }
-
-  function displayDessert() {
-    const container = document.getElementById('dessertItems');
-    container.innerHTML = '';
-    for (const name in desserts) {
-      const div = document.createElement('div');
-      div.className = 'item';
-
-      const n = document.createElement('span');
-      n.className = 'itemName';
-      n.innerText = name;
-
-      const minusBtn = document.createElement('button');
-      minusBtn.innerText = '-';
-      minusBtn.onclick = () => {
-        if (desserts[name] > 0) { desserts[name]--; displayDessert(); saveData(); }
-      };
-
-      const countSpan = document.createElement('span');
-      countSpan.className = 'counter';
-      countSpan.innerText = desserts[name];
-
-      const plusBtn = document.createElement('button');
-      plusBtn.innerText = '+';
-      plusBtn.onclick = () => { desserts[name]++; displayDessert(); saveData(); };
-
-      div.appendChild(n);
-      div.appendChild(minusBtn);
-      div.appendChild(countSpan);
-      div.appendChild(plusBtn);
-      container.appendChild(div);
-    }
-  }
-
+  // Reset all counts in all sections
   function resetCounts() {
     if (confirm('Are you sure you want to reset all counts to zero?')) {
-      for (const name in juices) { juices[name] = 0; }
-      for (const name in desserts) { desserts[name] = 0; }
-      displayJuice();
-      displayDessert();
+      for (let section in dataSections) {
+        for (let item in dataSections[section]) {
+          dataSections[section][item] = 0;
+        }
+        displaySectionItems(section);
+      }
       saveData();
       updateSummary();
     }
   }
 
+  // Update summary
   function updateSummary() {
-    const summary = document.getElementById('summary');
-    summary.innerHTML = '';
-
-    for (const name in juices) {
-      const p = document.createElement('p');
-      p.innerText = `Juice - ${name}: ${juices[name]} sold`;
-      summary.appendChild(p);
-    }
-    for (const name in desserts) {
-      const p = document.createElement('p');
-      p.innerText = `Dessert - ${name}: ${desserts[name]} sold`;
-      summary.appendChild(p);
+    const summaryDiv = document.getElementById('summary');
+    summaryDiv.innerHTML = '';
+    for (let section in dataSections) {
+      for (const name in dataSections[section]) {
+        const p = document.createElement('p');
+        p.innerText = `${section} - ${name}: ${dataSections[section][name]} sold`;
+        summaryDiv.appendChild(p);
+      }
     }
   }
 
+  // Initialize
   window.onload = () => {
-    displayJuice();
-    displayDessert();
+    for (let section in dataSections) {
+      displaySectionItems(section);
+    }
     updateSummary();
   };
 </script>
 </head>
 <body>
 
-<h1>JUIXY - Juice & Dessert</h1>
-
-<button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
-
-<nav>
-  <span onclick="showSection('juiceSection')">Juice</span>
-  <span onclick="showSection('dessertSection')">Desserts</span>
-</nav>
+<div id="topBar">
+  <div id="buttonsLeft">
+    <button id="stockBtn" onclick="alert('Stock management not implemented')">Stock</button>
+    <button id="clearBtn" onclick="resetCounts()">Clear Counts</button>
+  </div>
+  <div id="nav">
+    <span onclick="showSection('Juice')">Juice</span>
+    <span onclick="showSection('Milk-Cake')">Milk-Cake</span>
+    <span onclick="showSection('Tiramisu')">Tiramisu</span>
+    <span onclick="showSection('Matcha')">Matcha</span>
+    <span onclick="showSection('Mojito')">Mojito</span>
+  </div>
+</div>
 
 <!-- Juice Section -->
-<section id="juiceSection" class="active">
+<section id="Juice" class="active">
   <h2>Add New Juice</h2>
-  <input type="text" id="juiceName" placeholder="Enter juice name" />
-  <button onclick="addJuice()">Add Juice</button>
+  <input type="text" id="juiceInput" placeholder="Enter juice name" />
+  <button onclick="addItem('Juice', 'juiceInput')">Add Juice</button>
   <h3>Juice List</h3>
-  <div id="juiceItems"></div>
+  <div id="itemsContainer_Juice"></div>
 </section>
 
-<!-- Dessert Section -->
-<section id="dessertSection">
-  <h2>Add New Dessert</h2>
-  <input type="text" id="dessertName" placeholder="Enter dessert name" />
-  <button onclick="addDessert()">Add Dessert</button>
-  <h3>Dessert List</h3>
-  <div id="dessertItems"></div>
+<!-- Milk-Cake Section -->
+<section id="Milk-Cake">
+  <h2>Add New Milk-Cake</h2>
+  <input type="text" id="milkCakeInput" placeholder="Enter Milk-Cake name" />
+  <button onclick="addItem('Milk-Cake', 'milkCakeInput')">Add Milk-Cake</button>
+  <h3>Milk-Cake List</h3>
+  <div id="itemsContainer_Milk-Cake"></div>
+</section>
+
+<!-- Tiramisu Section -->
+<section id="Tiramisu">
+  <h2>Add New Tiramisu</h2>
+  <input type="text" id="tiramisuInput" placeholder="Enter Tiramisu name" />
+  <button onclick="addItem('Tiramisu', 'tiramisuInput')">Add Tiramisu</button>
+  <h3>Tiramisu List</h3>
+  <div id="itemsContainer_Tiramisu"></div>
+</section>
+
+<!-- Matcha Section -->
+<section id="Matcha">
+  <h2>Add New Matcha</h2>
+  <input type="text" id="matchaInput" placeholder="Enter Matcha name" />
+  <button onclick="addItem('Matcha', 'matchaInput')">Add Matcha</button>
+  <h3>Matcha List</h3>
+  <div id="itemsContainer_Matcha"></div>
+</section>
+
+<!-- Mojito Section -->
+<section id="Mojito">
+  <h2>Add New Mojito</h2>
+  <input type="text" id="mojitoInput" placeholder="Enter Mojito name" />
+  <button onclick="addItem('Mojito', 'mojitoInput')">Add Mojito</button>
+  <h3>Mojito List</h3>
+  <div id="itemsContainer_Mojito"></div>
 </section>
 
 <h2>Sales Summary</h2>
 <div id="summary"></div>
 
 <script>
+  // Show section
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
