@@ -89,7 +89,7 @@
   .addSection button:hover { background-color: #0b7dda; }
 </style>
 <script>
-  // Initialize data storage
+  // Initialize data
   let dataSections = {
     'Juice': {},
     'Milk-Cake': {},
@@ -98,39 +98,43 @@
     'Mojito': {}
   };
 
+  // Load data from localStorage
   for (let key in dataSections) {
     dataSections[key] = JSON.parse(localStorage.getItem(key)) || {};
   }
 
+  // Save data to localStorage
   function saveData() {
     for (let section in dataSections) {
       localStorage.setItem(section, JSON.stringify(dataSections[section]));
     }
   }
 
+  // Show section
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  // Add new item
-  function addItem(sectionName, inputId) {
+  // Add item
+  function addItem(section, inputId) {
     const name = document.getElementById(inputId).value.trim();
-    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
-    dataSections[sectionName][name] = 0;
+    if (!name || dataSections[section][name]) {
+      alert('Enter a valid and new item name');
+      return;
+    }
+    dataSections[section][name] = 0;
     document.getElementById(inputId).value = '';
-    displaySectionItems(sectionName);
+    displayItems(section);
     updateSummary();
     saveData();
   }
 
   // Display items
-  function displaySectionItems(sectionName) {
-    const container = document.getElementById('itemsContainer_' + sectionName);
-    if (!container) return;
+  function displayItems(section) {
+    const container = document.getElementById('itemsContainer_' + section);
     container.innerHTML = '';
-    const items = dataSections[sectionName];
-    for (const name in items) {
+    for (const name in dataSections[section]) {
       const div = document.createElement('div');
       div.className = 'item';
 
@@ -140,15 +144,15 @@
 
       const minusBtn = document.createElement('button');
       minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateSummary(); saveData(); } };
+      minusBtn.onclick = () => { if (dataSections[section][name] > 0) { dataSections[section][name]--; displayItems(section); updateSummary(); saveData(); } };
 
       const countSpan = document.createElement('span');
       countSpan.className = 'counter';
-      countSpan.innerText = items[name];
+      countSpan.innerText = dataSections[section][name];
 
       const plusBtn = document.createElement('button');
       plusBtn.innerText = '+';
-      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateSummary(); saveData(); };
+      plusBtn.onclick = () => { dataSections[section][name]++; displayItems(section); updateSummary(); saveData(); };
 
       // delete button
       const deleteBtn = document.createElement('button');
@@ -156,8 +160,8 @@
       deleteBtn.className = 'deleteBtn';
       deleteBtn.onclick = () => {
         if (confirm('Are you sure you want to delete "' + name + '"?')) {
-          delete dataSections[sectionName][name];
-          displaySectionItems(sectionName);
+          delete dataSections[section][name];
+          displayItems(section);
           updateSummary();
           saveData();
         }
@@ -179,7 +183,7 @@
         for (let item in dataSections[section]) {
           dataSections[section][item] = 0;
         }
-        displaySectionItems(section);
+        displayItems(section);
       }
       saveData();
       updateSummary();
@@ -202,11 +206,10 @@
     alert(msg);
   }
 
-  // No "Add to Stock" sections anymore, so remove related functions and elements.
-  // Just initialize the display
+  // Initialize display
   window.onload = () => {
     for (let section in dataSections) {
-      displaySectionItems(section);
+      displayItems(section);
     }
     updateSummary();
   };
@@ -214,7 +217,7 @@
 </head>
 <body>
 
-<!-- Header with name and buttons -->
+<!-- Header -->
 <div id="header">
   <h1 style="margin:0; color:green;">JUIXY</h1>
   <div id="topButtons" style="position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 20px;">
@@ -230,10 +233,10 @@
   <span onclick="showSection('Tiramisu')">Tiramisu</span>
   <span onclick="showSection('Matcha')">Matcha</span>
   <span onclick="showSection('Mojito')">Mojito</span>
-  <span onclick="showTopSaler()">Top Seller</span>
+  <span style="cursor:pointer; font-weight:bold; color:green;" onclick="showTopSaler()">Top Seller</span>
 </div>
 
-<!-- Sections -->
+<!-- Sections for each category -->
 <section id="Juice" class="active">
   <h2>Add New Juice</h2>
   <div class="addSection">
@@ -284,115 +287,15 @@
   <div id="itemsContainer_Mojito"></div>
 </section>
 
-<h2>Top Seller</h2> <!-- clickable header to show sorted list -->
-<div id="topSellerList" style="margin:20px auto; max-width:800px; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); cursor:pointer;" onclick="showTopSaler()">
-  Click here to see top selling items
-</div>
-
 <script>
-  // show section
-  function showSection(id) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-  // Add new item
-  function addItem(sectionName, inputId) {
-    const name = document.getElementById(inputId).value.trim();
-    if (!name || dataSections[sectionName][name]) { alert('Enter a valid and new item name'); return; }
-    dataSections[sectionName][name] = 0;
-    document.getElementById(inputId).value = '';
-    displaySectionItems(sectionName);
-    updateSummary();
-    saveData();
-  }
-
-  // Display items
-  function displaySectionItems(sectionName) {
-    const container = document.getElementById('itemsContainer_' + sectionName);
-    if (!container) return;
-    container.innerHTML = '';
-    const items = dataSections[sectionName];
-    for (const name in items) {
-      const div = document.createElement('div');
-      div.className = 'item';
-
-      const n = document.createElement('span');
-      n.className = 'itemName';
-      n.innerText = name;
-
-      const minusBtn = document.createElement('button');
-      minusBtn.innerText = '-';
-      minusBtn.onclick = () => { if (items[name] > 0) { items[name]--; displaySectionItems(sectionName); updateSummary(); saveData(); } };
-
-      const countSpan = document.createElement('span');
-      countSpan.className = 'counter';
-      countSpan.innerText = items[name];
-
-      const plusBtn = document.createElement('button');
-      plusBtn.innerText = '+';
-      plusBtn.onclick = () => { items[name]++; displaySectionItems(sectionName); updateSummary(); saveData(); };
-
-      // delete button
-      const deleteBtn = document.createElement('button');
-      deleteBtn.innerText = 'X';
-      deleteBtn.className = 'deleteBtn';
-      deleteBtn.onclick = () => {
-        if (confirm('Are you sure you want to delete "' + name + '"?')) {
-          delete dataSections[sectionName][name];
-          displaySectionItems(sectionName);
-          updateSummary();
-          saveData();
-        }
-      };
-
-      div.appendChild(n);
-      div.appendChild(minusBtn);
-      div.appendChild(countSpan);
-      div.appendChild(plusBtn);
-      div.appendChild(deleteBtn);
-      container.appendChild(div);
-    }
-  }
-
-  // Reset all counts
-  function resetCounts() {
-    if (confirm('Are you sure you want to reset all counts to zero?')) {
-      for (let section in dataSections) {
-        for (let item in dataSections[section]) {
-          dataSections[section][item] = 0;
-        }
-        displaySectionItems(section);
-      }
-      saveData();
-      updateSummary();
-    }
-  }
-
-  // Show sorted top sellers
-  function showTopSaler() {
-    let totalSales = {};
-    for (let section in dataSections) {
-      for (const name in dataSections[section]) {
-        totalSales[name] = (totalSales[name] || 0) + dataSections[section][name];
-      }
-    }
-    const sortedItems = Object.entries(totalSales).sort((a, b) => b[1] - a[1]);
-    let msg = 'Items sold (highest to lowest):\n';
-    for (const [name, count] of sortedItems) {
-      msg += `${name}: ${count}\n`;
-    }
-    alert(msg);
-  }
-
-  // No "Add to Stock" sections anymore
-  // Initialize on page load
+  // Display items on page load
   window.onload = () => {
     for (let section in dataSections) {
-      displaySectionItems(section);
+      displayItems(section);
     }
     updateSummary();
-  };
+  }
 </script>
+
 </body>
 </html>
